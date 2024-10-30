@@ -86,4 +86,7 @@ any(is.na(prostate))
 Dado que no hay ningún valor nulo en nuestro set de datos, continuamos.
 
 ## ¿Están estandarizadas las variables? En este punto del análisis, ¿es necesario normalizarlas?
+
+Tras revisar los histogramas realizados en el subapartado 2 podemos concluir que, dados los rangos de las variables y su disposición, estos no se encuentran normalizados.
+
 ## ¿Por qué crees que algunas variables están es escala logarítmica?
