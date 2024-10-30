@@ -13,7 +13,7 @@ date: "2024-10-30"
 ```{r}
 
 lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz'
-install.packages(lib_url)
+install.packages(lib_URL)
 
 library(ElemStatLearn)
 library(dplyr)
@@ -39,3 +39,10 @@ Dado que esta práctica no la requiere, eliminamos esta columna para simplificar
 prostate = prostate %>% select(-train)
 head(prostate)
 ```
+
+# 1. Exploración de los datos
+
+## 0.1 ¿Cuántas variables hay?
+
+Tras eliminar la columna `train`, contamos con un total de `r length(prostate)` variables.
+
