@@ -126,3 +126,35 @@ Los intervalos de confianza al 95% para los coeficientes del modelo son importan
 ```{r}
 confint(modelo_lineal, level = 0.95)
 ```
+
+-   **Intercepto**: El intervalo es de **1.2652** a **1.7494**, lo nos que indica que es significativo y no incluye 0, sugiriendo que hay un valor real positivo.
+
+<!-- -->
+
+-   **Coeficiente de `lcavol`**: El intervalo va de **0.5839** a **0.8547**, mostrando que `lcavol` tiene un efecto positivo y significativo sobre `lpsa`. Este resultado implica que un aumento en `lcavol` está asociado con un aumento en `lpsa`.
+
+## 4.3 Definición de RSE y su valor.
+
+El **Error Estándar de los Residuos (RSE)** es una medida de la cantidad de variabilidad de los residuos (la diferencia entre los valores observados y los valores predichos por el modelo) en un modelo de regresión lineal. Se utiliza para evaluar la precisión de las predicciones del modelo. Un RSE más bajo indica que el modelo tiene un mejor ajuste a los datos.
+
+Matemáticamente, el RSE se define como:
+
+$$
+RSE = \sqrt{\frac{1}{n-2} \sum (y_i - \hat{y}_i)^2}
+$$
+
+donde:
+
+-   $y_i$ son los valores observados,
+
+-   $\hat{y}_i$ son los valores predichos por el modelo,
+
+-   $n$ es el número de observaciones.
+
+Si echamos un vistazo de nuevo a nuestro resultado:
+
+```{r}
+summary(modelo_lineal)
+```
+
+Un RSE de 0.7875 indica que, en promedio, las predicciones del modelo se desvían de los valores observados de la variable de respuesta (`lpsa`) en aproximadamente 0.7875 unidades en la escala logarítmica.
