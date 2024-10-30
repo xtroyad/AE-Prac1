@@ -95,3 +95,26 @@ $$
 ### Conclusión
 
 En resumen, el modelo de regresión lineal simple muestra que hay una relación positiva y significativa entre `lcavol` y `lpsa`. A medida que el logaritmo del volumen del cáncer (`lcavol`) aumenta, también se espera que el logaritmo del antígeno prostático específico (`lpsa`) aumente. El modelo es estadísticamente significativo.
+
+# 4.2 Plot de los datos junto a la recta de regresión.
+
+Crearemos una gráfico de dispersión de `lcavol` vs `lpsa`.
+
+```{r}
+ggplot(prostate, 
+       aes(x = lcavol, y = lpsa)) +
+  
+ # Puntos de los datos
+geom_point(color = "blue", 
+           alpha = 0.4) +
+
+# Recta de regresión
+geom_smooth(method = "lm", 
+            color = "red") + 
+  
+labs(title = "Relación entre lcavol y lpsa",
+     x = "Log de Volumen de Cáncer (lcavol)",
+     y = "Log de Antígeno Prostático Específico (lpsa)") +
+  
+theme_minimal()
+```
