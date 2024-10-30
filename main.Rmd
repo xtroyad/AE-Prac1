@@ -46,3 +46,17 @@ head(prostate)
 
 Tras eliminar la columna `train`, contamos con un total de `r length(prostate)` variables.
 
+## ¿De qué clase son?
+
+Utilizamos la función `sapply` para aplicar una función, en este caso `class`, a todas las columnas.
+
+```{r}
+sapply(prostate, class)
+```
+
+Los tipos de las variables son del tipo `numeric` e `integer`, por lo que todos datos son números.
+
+## ¿Hay una variable que correspondiente al identificador de paciente? Si es así, elimínala.
+## ¿Hay valores nulos en alguno de los ficheros?
+## ¿Están estandarizadas las variables? En este punto del análisis, ¿es necesario normalizarlas?
+## ¿Por qué crees que algunas variables están es escala logarítmica?
