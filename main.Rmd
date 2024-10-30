@@ -39,3 +39,59 @@ Dado que esta práctica no la requiere, eliminamos esta columna para simplificar
 prostate = prostate %>% select(-train)
 head(prostate)
 ```
+
+# 4. Regresión lineal simple.
+
+Análisis de la dependencia lineal de la variable `lpsa` con la variable `lcavol`.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+Ajustamos el modelo y vemos su `summary()`:
+
+```{r}
+modelo_lineal <- lm(lpsa ~ lcavol, data = prostate)
+
+summary(modelo_lineal)
+```
+
+## 4.1 Interpretación del Modelo Lineal
+
+### Ecuación del Modelo
+
+La ecuación del modelo de regresión lineal es: $$
+\text{lpsa} = 1.50730 + 0.71932 \cdot \text{lcavol}
+$$
+
+### Intercepto ($\beta_0$)
+
+-   El intercepto de **1.50730** indica el valor estimado de `lpsa` cuando `lcavol` es igual a 0.
+
+### Pendiente ($\beta_1$)
+
+-   El coeficiente para `lcavol` es **0.71932**. Esto sugiere que, por cada unidad de incremento en `lcavol`, se espera que `lpsa` aumente en aproximadamente **0.71932** unidades.
+
+### Residuos
+
+-   Estadísticas de los residuos:
+    -   **Mínimo**: -1.67624
+    -   **Máximo**: 1.89672
+-   Esto indica variaciones en los errores de predicción.
+
+### Error Estándar de los Residuos
+
+-   El error estándar de los residuos es **0.7875**, indicando que las predicciones están, en promedio, a **0.7875** unidades de `lpsa` de los valores reales.
+
+### R-squared (R²)
+
+-   El $R^2$ múltiple es **0.5394**, lo que significa que aproximadamente el **53.94%** de la variabilidad en `lpsa` se puede explicar por la variabilidad en `lcavol`.
+
+### F-statistic
+
+-   El valor de la estadística F es **111.3** con un valor p-value a **2.2e-16**, indicando que al menos uno de los predictores tiene un efecto significativo en `lpsa`.
+
+### Conclusión
+
+En resumen, el modelo de regresión lineal simple muestra que hay una relación positiva y significativa entre `lcavol` y `lpsa`. A medida que el logaritmo del volumen del cáncer (`lcavol`) aumenta, también se espera que el logaritmo del antígeno prostático específico (`lpsa`) aumente. El modelo es estadísticamente significativo.
