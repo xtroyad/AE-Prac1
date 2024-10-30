@@ -57,7 +57,7 @@ modelo_lineal <- lm(lpsa ~ lcavol, data = prostate)
 summary(modelo_lineal)
 ```
 
-## 4.1 Interpretación del Modelo Lineal
+## 4.1 Interpretación del Modelo Lineal calculado
 
 ### Ecuación del Modelo
 
@@ -96,7 +96,7 @@ $$
 
 En resumen, el modelo de regresión lineal simple muestra que hay una relación positiva y significativa entre `lcavol` y `lpsa`. A medida que el logaritmo del volumen del cáncer (`lcavol`) aumenta, también se espera que el logaritmo del antígeno prostático específico (`lpsa`) aumente. El modelo es estadísticamente significativo.
 
-# 4.2 Plot de los datos junto a la recta de regresión.
+## 4.2 Plot de los datos junto a la recta de regresión.
 
 Crearemos una gráfico de dispersión de `lcavol` vs `lpsa`.
 
@@ -119,7 +119,7 @@ labs(title = "Relación entre lcavol y lpsa",
 theme_minimal()
 ```
 
-## 4.2 Intervalos de confianza para los coeficientes del modelo con una confianza de 0.95.
+## 4.3 Intervalos de confianza para los coeficientes del modelo con una confianza de 0.95.
 
 Los intervalos de confianza al 95% para los coeficientes del modelo son importantes para entender la precisión de las estimaciones. A continuación se presentan los intervalos calculados:
 
@@ -127,13 +127,13 @@ Los intervalos de confianza al 95% para los coeficientes del modelo son importan
 confint(modelo_lineal, level = 0.95)
 ```
 
--   **Intercepto**: El intervalo es de **1.2652** a **1.7494**, lo nos que indica que es significativo y no incluye 0, sugiriendo que hay un valor real positivo.
+-   **Intercepto**: El intervalo es de **1.2652** a **1.7494**, lo que nos indica que es significativo y no incluye 0, sugiriendo que hay un valor real positivo.
 
 <!-- -->
 
 -   **Coeficiente de `lcavol`**: El intervalo va de **0.5839** a **0.8547**, mostrando que `lcavol` tiene un efecto positivo y significativo sobre `lpsa`. Este resultado implica que un aumento en `lcavol` está asociado con un aumento en `lpsa`.
 
-## 4.3 Definición de RSE y su valor.
+## 4.4 Definición de RSE y su valor.
 
 El **Error Estándar de los Residuos (RSE)** es una medida de la cantidad de variabilidad de los residuos (la diferencia entre los valores observados y los valores predichos por el modelo) en un modelo de regresión lineal. Se utiliza para evaluar la precisión de las predicciones del modelo. Un RSE más bajo indica que el modelo tiene un mejor ajuste a los datos.
 
@@ -158,3 +158,92 @@ summary(modelo_lineal)
 ```
 
 Un RSE de 0.7875 indica que, en promedio, las predicciones del modelo se desvían de los valores observados de la variable de respuesta (`lpsa`) en aproximadamente 0.7875 unidades en la escala logarítmica.
+
+## 4.5 Estudio de la eficacia del modelo.
+
+### **R-cuadrado (R²)**
+
+El coeficiente de determinación $R^2$ es una métrica que indica la proporción de la varianza en la variable dependiente `lpsa` que es predecible a partir de la variable independiente `lcavol`. En este modelo, el $R^2$ es:
+
+$R^2 = 0.5394$
+
+-   **Interpretación**: Aproximadamente el 53.94% de la variabilidad en los niveles de PSA puede ser explicada por el volumen de cáncer. Esto sugiere una relación moderada entre las variables.
+
+### **R-cuadrado Ajustado (Adjusted R²)**
+
+El $R^2$ ajustado, que en este caso es:
+
+$R^2$ Ajustado = 0.5346
+
+-   **Interpretación**: El $R^2$ ajustado penaliza el $R^2$ por el número de predictores en el modelo, lo que lo hace más adecuado cuando se comparan modelos con diferentes números de variables. Este valor indica que el modelo tiene un ajuste similar al $R^2$, sugiriendo que el volumen de cáncer sigue siendo un predictor significativo.
+
+### **Análisis de Varianza**
+
+El estadístico F:
+
+**F-estadístico = 111.3, p-valor \< 2.2e-16**
+
+-   **Interpretación**: Este resultado indica que el modelo en su conjunto es significativamente mejor que un modelo sin variables predictivas (modelo nulo). Un p-valor extremadamente bajo sugiere que al menos una de las variables predictivas (en este caso, `lcavol`) es relevante para predecir `lpsa`.
+
+### **Error Estándar de los Residuos (RSE)**
+
+Como mencionamos anteriormente, el RSE es:
+
+**RSE = 0.7875**
+
+-   **Interpretación**: Este valor indica el tamaño promedio de los errores en las predicciones del modelo. Un RSE relativamente bajo en comparación con la variabilidad total en `lpsa` indica que el modelo tiene un buen ajuste.
+
+### Resumen
+
+En conjunto, el modelo de regresión lineal simple muestra una eficacia razonable para predecir los niveles de PSA en función del volumen de cáncer. La combinación de un $R^2$ moderado, un p-valor significativo y un RSE bajo sugiere que la relación entre `lcavol` y `lpsa` es relevante.
+
+## 4. 6 Interpretación del Modelo Lineal (`psa` y `cavol`)
+
+### **Ecuación del Modelo**
+
+El modelo de regresión lineal simple que hemos calculado es:
+
+$$ 
+\text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol} 
+$$
+
+### Relación entre PSA y cavol
+
+1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es: $$
+    \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
+    $$
+
+    $$
+    ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
+    $$
+
+2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial: $$
+    \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol})}
+    $$
+
+    $$
+    \text{PSA} = e^{1.50730 } + e^{(0.71932 \times ln(\text{cavol})}
+    $$
+
+    $$
+    \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol}})^{0.71932}
+    $$
+
+3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo: $$
+    \text{cavol} = e^{ln(\text{cavol})}
+    $$
+
+    Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
+
+    $$
+    \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
+    $$
+
+4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como: $$
+    \text{PSA} = C \cdot \text{cavol}^{b}
+    $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
+
+### Interpretación de la Relación
+
+-   **C**: Este es un coeficiente constante que representa el nivel de `PSA` cuando `cavol` es igual a 1 (o la unidad de referencia).
+-   **b (0.71932)**: Indica que por cada aumento en el volumen de cáncer (`cavol`), el `PSA` aumenta en un porcentaje específico que depende del valor de `cavol`.
