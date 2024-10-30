@@ -54,7 +54,22 @@ Utilizamos la función `sapply` para aplicar una función, en este caso `class`,
 sapply(prostate, class)
 ```
 
-Los tipos de las variables son del tipo `numeric` e `integer`, por lo que todos datos son números.
+Los tipos de las variables son del tipo `numeric` e `integer`, por lo que todos datos son números. Dado que son datos numéricos, podemos echar un vistazo a sus distribuciones.
+
+```{r}
+par(mfrow=c(3,3))
+for (column in names(prostate)) {
+  hist(prostate[[column]], main=paste("Histograma de", column), xlab = column)
+}
+```
+
+Podemos observar que los valores de la variable `svi` se concentran en el 0 y en el 1, indicador de que esta variable podría ser un *booleano*. Veamos si estos son sus únicos valores.
+
+```{r}
+unique(prostate$svi)
+```
+
+0 y 1 son los únicos valores presentes, por lo que confirmaríamos que se trata de una variable *booleana*.
 
 ## 1.3 ¿Hay una variable que correspondiente al identificador de paciente? Si es así, elimínala.
 
