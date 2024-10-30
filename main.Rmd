@@ -13,7 +13,7 @@ date: "2024-10-30"
 ```{r}
 
 lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz'
-install.packages(lib_url)
+install.packages(lib_URL)
 
 library(ElemStatLearn)
 library(dplyr)
@@ -39,6 +39,64 @@ Dado que esta práctica no la requiere, eliminamos esta columna para simplificar
 prostate = prostate %>% select(-train)
 head(prostate)
 ```
+
+# 1. Exploración de los datos
+
+## 1.1 ¿Cuántas variables hay?
+
+Tras eliminar la columna `train`, contamos con un total de `r length(prostate)` variables.
+
+## 1.2 ¿De qué clase son?
+
+Utilizamos la función `sapply` para aplicar una función, en este caso `class`, a todas las columnas.
+
+```{r}
+sapply(prostate, class)
+```
+
+Los tipos de las variables son del tipo `numeric` e `integer`, por lo que todos datos son números. Dado que son datos numéricos, podemos echar un vistazo a sus distribuciones.
+
+```{r}
+par(mfrow=c(3,3))
+for (column in names(prostate)) {
+  hist(prostate[[column]], main=paste("Histograma de", column), xlab = column)
+}
+```
+
+Podemos observar que los valores de la variable `svi` se concentran en el 0 y en el 1, indicador de que esta variable podría ser un *booleano*. Veamos si estos son sus únicos valores.
+
+```{r}
+unique(prostate$svi)
+```
+
+0 y 1 son los únicos valores presentes, por lo que confirmaríamos que se trata de una variable *booleana*.
+
+## 1.3 ¿Hay una variable que correspondiente al identificador de paciente? Si es así, elimínala.
+
+No existe ninguna variable con el identificador del paciente.
+
+## 1.4 ¿Hay valores nulos en alguno de los ficheros?
+
+Averiguamos si existe algún valor nulo en todo el conjunto de datos. En caso de que lo haya, identificamos las columnas que los contienen.
+
+```{r}
+any(is.na(prostate))
+```
+
+Dado que no hay ningún valor nulo en nuestro set de datos, continuamos.
+
+## ¿Están estandarizadas las variables? En este punto del análisis, ¿es necesario normalizarlas?
+
+Tras revisar los histogramas realizados en el subapartado 2 podemos concluir que, dados los rangos de las variables y su disposición, estos no se encuentran normalizados.
+
+## ¿Por qué crees que algunas variables están es escala logarítmica?
+
+El objetivo de poner algunas de las variables en escala logarítmica es el de facilitar su posterior análisis por varios motivos:
+
+- Reducir la asimetría en casos en los que la distribución está muy sobrecargada en uno de sus extremos donde algunos valores excepcionales distorsionarían las estadísticas de la variable, haciendo que sus distribuciones se asemejen más a las de una distribución normal (como se observa en `lcavol`, `lweight` y `lpsa`).
+- Hacer que algunas variables se comporten de forma lineal cuando en escala natural no lo harían.
+
+Además, cabe añadir que en los campos de la biología y la química es común usar escalas logarítmicas cuando estas hacen más fácil la interpretación de los datos.
 
 # 4. Regresión lineal simple.
 
