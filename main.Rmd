@@ -90,3 +90,10 @@ Dado que no hay ningún valor nulo en nuestro set de datos, continuamos.
 Tras revisar los histogramas realizados en el subapartado 2 podemos concluir que, dados los rangos de las variables y su disposición, estos no se encuentran normalizados.
 
 ## ¿Por qué crees que algunas variables están es escala logarítmica?
+
+El objetivo de poner algunas de las variables en escala logarítmica es el de facilitar su posterior análisis por varios motivos:
+
+- Reducir la asimetría en casos en los que la distribución está muy sobrecargada en uno de sus extremos donde algunos valores excepcionales distorsionarían las estadísticas de la variable, haciendo que sus distribuciones se asemejen más a las de una distribución normal (como se observa en `lcavol`, `lweight` y `lpsa`).
+- Hacer que algunas variables se comporten de forma lineal cuando en escala natural no lo harían.
+
+Además, cabe añadir que en los campos de la biología y la química es común usar escalas logarítmicas cuando estas hacen más fácil la interpretación de los datos.
