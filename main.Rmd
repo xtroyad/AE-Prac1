@@ -300,7 +300,7 @@ $$
 
 ### Relación entre PSA y cavol
 
-1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es: 
+1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es:
 
     $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
@@ -310,7 +310,7 @@ $$
     ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
     $$
 
-2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial: 
+2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial:
 
     $$
     \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
@@ -324,7 +324,7 @@ $$
     \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol})})^{0.71932}
     $$
 
-3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo: 
+3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo:
 
     $$
     \text{cavol} = e^{ln(\text{cavol})}
@@ -336,7 +336,7 @@ $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
     $$
 
-4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como: 
+4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como:
 
     $$
     \text{PSA} = C \cdot \text{cavol}^{b}
@@ -396,3 +396,59 @@ Se ha realizado un análisis de correlación entre las variables del conjunto de
     -   Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
     -   La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
     -   La correlación entre `lcp` y `lcavol` enfatiza la conexión entre el volumen del tumor y los niveles de PSA, lo cual es relevante para la prognosis clínica.
+
+# 5.2 Modelo de regresión lineal para predecir `lpsa`.
+
+```{r}
+modelo_lpsa <- lm(lpsa ~ lcavol + lweight + lbph + lcp, data = prostate)
+
+summary(modelo_lpsa)
+```
+
+1.  **Coeficientes**:
+
+-   **Intercepto**: -0.42786 (no es significativo, p = 0.5600).
+
+-   **`lcavol`**: 0.58479 (muy significativo, p = 3.65e-09). Esto indica que, manteniendo las otras variables constantes, un aumento de una unidad en `lcavol` se asocia con un aumento de 0.58479 unidades en `lpsa`.
+
+-   **`lweight`**: 0.58630 (significativo, p = 0.0055). Al igual que `lcavol`, un aumento de una unidad en `lweight` también se asocia con un incremento en `lpsa`, lo que sugiere que el peso del paciente puede influir en los niveles de PSA.
+
+-   **`lbph`**: 0.05412 (no significativo, p = 0.3571). Esto sugiere que la hipertrofia benigna de próstata no tiene un efecto significativo en los niveles de PSA.
+
+-   **`lcp`**: 0.09102 (no significativo, p = 0.2178). Similar a `lbph`, no parece tener un efecto significativo en `lpsa`.
+
+2.  **Residuals**:
+
+-   Los residuos tienen un rango que va desde -1.55078 hasta 1.78086, con un valor mediano cercano a cero, lo que indica que el modelo está relativamente equilibrado en cuanto a sus predicciones.
+
+3.  **R-squared**:
+
+-   **Multiple R-squared**: 0.6056. Esto significa que aproximadamente el 60.56% de la variación en `lpsa` puede ser explicada por las variables independientes (`lcavol`, `lweight`, `lbph`, `lcp`).
+
+-   **Adjusted R-squared**: 0.5884. Este valor ajustado es ligeramente inferior, lo que sugiere que el modelo tiene un ajuste razonable, pero que podría no ser óptimo dado el número de variables en comparación con el número de observaciones.
+
+4.  **F-statistic**: 35.31 (p \< 2.2e-16). Esto indica que, en general, al menos una de las variables independientes es significativamente diferente de cero, lo que sugiere que el modelo tiene validez.
+
+## Conclusiones
+
+1.  **Significancia de las variables**:
+
+-   Las variables `lcavol` y `lweight` son estadísticamente significativas y tienen un efecto positivo en `lpsa`. Sin embargo, `lbph` y `lcp` no son significativos y no parecen influir en `lpsa`.
+
+2.  **Eficacia del modelo**:
+
+-   El modelo tiene un R² ajustado de aproximadamente 0.59, lo que indica que, aunque hay una correlación significativa con `lpsa`, hay un 40% de la variación que no se explica por las variables incluidas. Esto sugiere que pueden existir otros factores que influyen en `lpsa` que no están siendo considerados en el modelo actual.
+
+3.  **Limitaciones**:
+
+-   La significancia de las variables se centra en `lcavol` y `lweight`, lo que puede señalar la necesidad de explorar más a fondo el impacto de estas variables en el contexto del cáncer de próstata.
+
+-   Podría ser útil considerar la inclusión de variables adicionales que podrían mejorar el ajuste del modelo o explorar interacciones entre variables.
+
+4.  **Recomendaciones**:
+
+-   Realizar un análisis de residuales para evaluar supuestos del modelo como la homocedasticidad y la normalidad.
+
+-   Considerar un análisis de multicolinealidad para asegurarse de que no haya problemas entre las variables independientes.
+
+En general, el modelo ofrece información valiosa sobre los determinantes de `lpsa`, pero hay margen de mejora en términos de ajuste y comprensión de los factores que contribuyen a esta variable.
