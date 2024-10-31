@@ -39,6 +39,7 @@ Dado que esta práctica no la requiere, eliminamos esta columna para simplificar
 prostate = prostate %>% select(-train)
 head(prostate)
 ```
+
 # 1. Exploración de los datos
 
 ## 1.1 ¿Cuántas variables hay?
