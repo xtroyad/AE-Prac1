@@ -136,8 +136,7 @@ En el caso de la edad nos encontramos una distribución que podría recordar a l
 ```{r}
 # Filtramos por gleason = 7
 gleason.7 <- subset(prostate, gleason == 7)
-# En el apartado anterior cambiamos svi=0 por la categoría No
-svi.pct0 <- sum(gleason.7$svi == "No") / nrow(gleason.7) * 100
+svi.pct0 <- sum(gleason.7$svi == 0) / nrow(gleason.7) * 100
 svi.pct0.r = round(svi.pct0)
 svi.pct0
 ```
@@ -145,6 +144,18 @@ svi.pct0
 Por lo tanto, un `r svi.pct0.r`% de los pacientes con índice de Gleason igual a 7 presenta un `svi` de 0.
 
 ## ¿Qué porcentaje de pacientes con índice svi igual a 0 tiene la puntuación de Gleason igual a 7?
+
+```{r}
+# Filtramos por gleason = 7
+svi.0 <- subset(prostate, svi == 0)
+# En el apartado anterior cambiamos svi=0 por la categoría No
+gleason.pct7 <- sum(svi.0$gleason == 7) / nrow(svi.0) * 100
+gleason.pct7.r = round(gleason.pct7)
+gleason.pct7
+```
+
+Por lo tanto, un `r gleason.pct7.r`% de los pacientes con un `svi` de 0 presenta un índice de Gleason igual a 7.
+
 ## Estas dos variables, ¿son independientes?
 
 # 4. Regresión lineal simple.
