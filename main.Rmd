@@ -103,7 +103,7 @@ Además, cabe añadir que en los campos de la biología y la química es común 
 Para convertir las variables `svi` y `gleason` a categóricas usamos la función `factor`. 
 
 ```{r}
-prostate$svi <- factor(prostate$svi, levels = c(0, 1), labels = c("No", "Yes"))
+prostate$svi <- factor(prostate$svi)
 prostate$gleason <- factor(prostate$gleason)
 ```
 
@@ -128,6 +128,24 @@ barplot(table(prostate$age), main = "Distribución de Edad", col = "salmon", wid
 ```
 
 En el caso de la edad nos encontramos una distribución que podría recordar a la normal, centrada en los 65 años, encontrándose el grueso de la distribución entre los 61 y 70 años. Cabe añadir que encontramos casos desde los `r min.age` hasta los `r max.age` años.
+
+# 3. Análisis de frecuencias (1 punto)
+
+## ¿Qué porcentaje de pacientes con la puntuación de Gleason igual a 7, presenta índice igual svi igual a 0?
+
+```{r}
+# Filtramos por gleason = 7
+gleason.7 <- subset(prostate, gleason == 7)
+# En el apartado anterior cambiamos svi=0 por la categoría No
+svi.pct0 <- sum(gleason.7$svi == "No") / nrow(gleason.7) * 100
+svi.pct0.r = round(svi.pct0)
+svi.pct0
+```
+
+Por lo tanto, un `r svi.pct0.r`% de los pacientes con índice de Gleason igual a 7 presenta un `svi` de 0.
+
+## ¿Qué porcentaje de pacientes con índice svi igual a 0 tiene la puntuación de Gleason igual a 7?
+## Estas dos variables, ¿son independientes?
 
 # 4. Regresión lineal simple.
 
