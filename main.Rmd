@@ -93,14 +93,14 @@ Tras revisar los histogramas realizados en el subapartado 2 podemos concluir que
 
 El objetivo de poner algunas de las variables en escala logarítmica es el de facilitar su posterior análisis por varios motivos:
 
-- Reducir la asimetría en casos en los que la distribución está muy sobrecargada en uno de sus extremos donde algunos valores excepcionales distorsionarían las estadísticas de la variable, haciendo que sus distribuciones se asemejen más a las de una distribución normal (como se observa en `lcavol`, `lweight` y `lpsa`).
-- Hacer que algunas variables se comporten de forma lineal cuando en escala natural no lo harían.
+-   Reducir la asimetría en casos en los que la distribución está muy sobrecargada en uno de sus extremos donde algunos valores excepcionales distorsionarían las estadísticas de la variable, haciendo que sus distribuciones se asemejen más a las de una distribución normal (como se observa en `lcavol`, `lweight` y `lpsa`).
+-   Hacer que algunas variables se comporten de forma lineal cuando en escala natural no lo harían.
 
 Además, cabe añadir que en los campos de la biología y la química es común usar escalas logarítmicas cuando estas hacen más fácil la interpretación de los datos.
 
 # 2. Análisis de variables categóricas
 
-Para convertir las variables `svi` y `gleason` a categóricas usamos la función `factor`. 
+Para convertir las variables `svi` y `gleason` a categóricas usamos la función `factor`.
 
 ```{r}
 prostate$svi <- factor(prostate$svi, levels = c(0, 1), labels = c("No", "Yes"))
@@ -150,7 +150,7 @@ summary(modelo_lineal)
 
 ### Ecuación del Modelo
 
-La ecuación del modelo de regresión lineal es: 
+La ecuación del modelo de regresión lineal es:
 
 $$
 \text{lpsa} = 1.50730 + 0.71932 \cdot \text{lcavol}
@@ -301,6 +301,7 @@ $$
 ### Relación entre PSA y cavol
 
 1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es: 
+
     $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
     $$
@@ -310,6 +311,7 @@ $$
     $$
 
 2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial: 
+
     $$
     \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
     $$
@@ -323,6 +325,7 @@ $$
     $$
 
 3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo: 
+
     $$
     \text{cavol} = e^{ln(\text{cavol})}
     $$
@@ -334,6 +337,7 @@ $$
     $$
 
 4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como: 
+
     $$
     \text{PSA} = C \cdot \text{cavol}^{b}
     $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
@@ -342,3 +346,53 @@ $$
 
 -   **C**: Este es un coeficiente constante que representa el nivel de `PSA` cuando `cavol` es igual a 1 (o la unidad de referencia).
 -   **b (0.71932)**: Indica que por cada aumento en el volumen de cáncer (`cavol`), el `PSA` aumenta en un porcentaje específico que depende del valor de `cavol`.
+
+# 5. Regresión lineal múltiple.
+
+## 5.1 Observación de correlaciones entre variables.
+
+```{r}
+library(corrplot)
+
+cor_data = prostate %>% select(-age, -pgg45, -gleason, -svi)
+
+cor_matrix <- cor(cor_data)
+
+# Quitamos las relaciones (x, x), puede ser menos intuitiva de interpretar, pero
+# los colores consiguen ser más descriptivos.
+corrplot(cor_matrix, 
+         diag = FALSE, 
+         method = "circle", 
+         type = "upper", 
+         tl.col = "black", 
+         tl.srt = 25, 
+         title = "Matriz de Correlación entre Variables")
+
+print(cor_matrix)
+```
+
+La matriz de correlación muestra las correlaciones de Pearson entre las variables del conjunto de datos, con valores que van de -1 a 1.
+
+### Análisis de la Matriz de Correlación
+
+Se ha realizado un análisis de correlación entre las variables del conjunto de datos, excluyendo las siguientes variables: **`age`**, **`pgg45`**, **`gleason`**, y **`svi`**. Las variables consideradas son: **`lcavol`**, **`lweight`**, **`lbph`**, **`lcp`**, y **`lpsa`**. A continuación se presentan los resultados y las interpretaciones:
+
+1.  **`lcavol`**:
+    -   **Máxima correlación**: `lpsa` (0.734).
+    -   **Interpretación**: La fuerte correlación entre el volumen del cáncer en escala logarítmica (`lcavol`) y el nivel de antígeno específico de la próstata (PSA) sugiere que a medida que aumenta el volumen del cáncer, también tienden a aumentar los niveles de PSA.
+2.  **`lpsa`**:
+    -   **Máxima correlación**: `lcavol` (0.734).
+    -   **Interpretación**: Refuerza la conexión entre el nivel de PSA y el volumen del cáncer. Esto implica que los médicos pueden utilizar el PSA como un indicador indirecto del volumen tumoral y, por lo tanto, de la severidad del cáncer.
+3.  **`lweight`**:
+    -   **Máxima correlación**: `lbph` (0.442).
+    -   **Interpretación**: La correlación entre el peso en escala logarítmica (`lweight`) y la hipertrofia benigna de próstata (`lbph`) indica que hay una relación positiva entre ambos. Esto sugiere que los hombres con mayor peso pueden tener mayor riesgo de desarrollar condiciones benignas en la próstata.
+4.  **`lbph`**:
+    -   **Máxima correlación**: `lweight` (0.442).
+    -   **Interpretación**: Similar a lo mencionado anteriormente, esta correlación sugiere que el aumento de peso podría estar relacionado con la aparición de hipertrofia benigna, sugiriendo un vínculo en la salud prostática.
+5.  **`lcp`**:
+    -   **Máxima correlación**: `lcavol` (0.675).
+    -   **Interpretación**: La correlación entre los niveles de PSA en escala logarítmica (`lcp`) y el volumen del cáncer (`lcavol`) indica que a mayor volumen tumoral, los niveles de PSA también tienden a ser más altos. Esto es importante para evaluar la progresión del cáncer y determinar el tratamiento adecuado.
+6.  **Conclusiones generales**:
+    -   Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
+    -   La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
+    -   La correlación entre `lcp` y `lcavol` enfatiza la conexión entre el volumen del tumor y los niveles de PSA, lo cual es relevante para la prognosis clínica.
