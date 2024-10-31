@@ -158,6 +158,18 @@ Por lo tanto, un `r gleason.pct7.r`% de los pacientes con un `svi` de 0 presenta
 
 ## Estas dos variables, ¿son independientes?
 
+Vistos los resultados de estos dos últimos subapartados, podemos pensar que estas variables están relacionadas. Además, ya en el apartado 2 se vio como también podría existir una posible relación entre las variables y se le trató de dar una explicación lógica. 
+
+Para probar si realmente existe esta relación entre variables, exponemos los datos a un test de independencia *chi cuadrado*, cuya implementación en R es simple y rápida. En este test queremos probar que las variables están relacionadas, lo cual es nuestra hipótesis $H_1$, por lo que la hipótesis nula $H_0$ será que estas son independientes:
+
+```{r}
+contingencia.svi_gleason <- table(prostate$gleason, prostate$svi)
+chi_test <- chisq.test(contingencia.svi_gleason)
+chi_test
+```
+
+Al realizar el test, obtenemos un $p$-valor de 0.0012. Dado que los niveles de significación más comunes son $0.05$ y $0.01$ y nuestro $p$-valor es notablemente menor, podemos afirmar con seguridad que existe una relación entre estas variables.
+
 # 4. Regresión lineal simple.
 
 Análisis de la dependencia lineal de la variable `lpsa` con la variable `lcavol`.
