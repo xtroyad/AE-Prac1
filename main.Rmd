@@ -103,16 +103,16 @@ Además, cabe añadir que en los campos de la biología y la química es común 
 Para convertir las variables `svi` y `gleason` a categóricas usamos la función `factor`. 
 
 ```{r}
-prostate$svif <- factor(prostate$svi, levels = c(0, 1), labels = c("No", "Yes"))
-prostate$gleasonf <- factor(prostate$gleason)
+prostate$svi <- factor(prostate$svi, levels = c(0, 1), labels = c("No", "Yes"))
+prostate$gleason <- factor(prostate$gleason)
 ```
 
 A continuación, visualizamos las distribuciones usando gráficos de barras:
 
 ```{r}
 par(mfrow = c(1, 2))  # Ajustar disposición gráfica
-barplot(table(prostate$svif), main = "Distribución de SVI", col = "lightblue")
-barplot(table(prostate$gleasonf), main = "Distribución de Gleason", col = "lightgreen")
+barplot(table(prostate$svi), main = "Distribución de SVI", col = "lightblue")
+barplot(table(prostate$gleason), main = "Distribución de Gleason", col = "lightgreen")
 ```
 
 Se puede observar como para la mayoría de pacientes se indica que el cáncer no ha invadido la vesícula seminal, a la par que la mayoría tiene un índice de Gleason de 6 o 7. Esto puede indicar cierta relación, ya que el índice de Gleason mide la agresividad del cáncer, por lo que índices más bajos indican cánceres menos agresivos. Podríamos aventurarnos a pensar que la mayoría de cánceres agresivos no llegarían a infectar la vesícula seminal.
@@ -123,8 +123,8 @@ En el caso de la variable **Edad** queremos hacer una agrupación cada 5 años, 
 max.age = max(prostate$age)
 min.age = min(prostate$age)
 # Añadimos +5 al maximo para que el rango tome tambien el ultimo grupo
-prostate$agef <- cut(prostate$age, breaks = seq(from=min.age, to=max.age+5, by=5), right=FALSE)
-barplot(table(prostate$agef), main = "Distribución de Edad", col = "salmon", width = 3)
+prostate$age <- cut(prostate$age, breaks = seq(from=min.age, to=max.age+5, by=5), right=FALSE)
+barplot(table(prostate$age), main = "Distribución de Edad", col = "salmon", width = 3)
 ```
 
 En el caso de la edad nos encontramos una distribución que podría recordar a la normal, centrada en los 65 años, encontrándose el grueso de la distribución entre los 61 y 70 años. Cabe añadir que encontramos casos desde los `r min.age` hasta los `r max.age` años.
