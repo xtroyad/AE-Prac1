@@ -119,7 +119,9 @@ summary(modelo_lineal)
 
 ### Ecuación del Modelo
 
-La ecuación del modelo de regresión lineal es: $$
+La ecuación del modelo de regresión lineal es: 
+
+$$
 \text{lpsa} = 1.50730 + 0.71932 \cdot \text{lcavol}
 $$
 
@@ -267,7 +269,8 @@ $$
 
 ### Relación entre PSA y cavol
 
-1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es: $$
+1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es: 
+    $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
     $$
 
@@ -275,19 +278,21 @@ $$
     ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
     $$
 
-2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial: $$
-    \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol})}
+2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial: 
+    $$
+    \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
     $$
 
     $$
-    \text{PSA} = e^{1.50730 } + e^{(0.71932 \times ln(\text{cavol})}
+    \text{PSA} = e^{1.50730 } + e^{(0.71932 \times ln(\text{cavol}))}
     $$
 
     $$
-    \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol}})^{0.71932}
+    \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol})})^{0.71932}
     $$
 
-3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo: $$
+3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo: 
+    $$
     \text{cavol} = e^{ln(\text{cavol})}
     $$
 
@@ -297,7 +302,8 @@ $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
     $$
 
-4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como: $$
+4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como: 
+    $$
     \text{PSA} = C \cdot \text{cavol}^{b}
     $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
 
