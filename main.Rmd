@@ -13,7 +13,7 @@ date: "2024-10-30"
 ```{r}
 
 lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz'
-install.packages(lib_URL)
+# install.packages(lib_URL)
 
 library(ElemStatLearn)
 library(dplyr)
@@ -129,7 +129,7 @@ barplot(table(prostate$age), main = "Distribución de Edad", col = "salmon", wid
 
 En el caso de la edad nos encontramos una distribución que podría recordar a la normal, centrada en los 65 años, encontrándose el grueso de la distribución entre los 61 y 70 años. Cabe añadir que encontramos casos desde los `r min.age` hasta los `r max.age` años.
 
-# 3. Análisis de frecuencias (1 punto)
+# 3. Análisis de frecuencias
 
 ## ¿Qué porcentaje de pacientes con la puntuación de Gleason igual a 7, presenta índice igual svi igual a 0?
 
@@ -168,7 +168,7 @@ chi_test <- chisq.test(contingencia.svi_gleason)
 chi_test
 ```
 
-Al realizar el test, obtenemos un $p$-valor de 0.0012. Dado que los niveles de significación más comunes son $0.05$ y $0.01$ y nuestro $p$-valor es notablemente menor, podemos afirmar con seguridad que existe una relación entre estas variables.
+Al realizar el test, obtenemos un $p$-valor de 0.0012. Dado que los niveles de significación más comunes son $0.05$ y $0.01$, y nuestro $p$-valor es notablemente menor, podemos afirmar con seguridad que existe una relación entre estas variables.
 
 # 4. Regresión lineal simple.
 
@@ -383,3 +383,12 @@ $$
 
 -   **C**: Este es un coeficiente constante que representa el nivel de `PSA` cuando `cavol` es igual a 1 (o la unidad de referencia).
 -   **b (0.71932)**: Indica que por cada aumento en el volumen de cáncer (`cavol`), el `PSA` aumenta en un porcentaje específico que depende del valor de `cavol`.
+
+# 6. Modelo de Ridge y Lasso
+
+Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro set de datos y creamos el *training set*.
+
+```{r}
+library(glmnet)
+```
+
