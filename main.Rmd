@@ -386,7 +386,7 @@ $$
 
 # 6. Modelo de Ridge y Lasso
 
-Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro conjunto de datos y creamos el *training set*. Para crear nuestro training set utilizaremos el 70% de las entradas de nuestro conjunto de datos.
+Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro conjunto de datos lo dividimos entre el conjunto de **training** y el de **testeo**. Para crear nuestro training set utilizaremos el 70% de las entradas de nuestro conjunto de datos.
 
 ```{r}
 library(glmnet)
@@ -399,13 +399,60 @@ X <- as.matrix(datos_usados[, -which(names(datos_usados) == "lpsa")])
 y <- datos_usados$lpsa
 
 # Creamos los conjuntos de train y test, especificando la seed para poder reproducir la ejecución
-# con los mismos datos pseudo-aleatorios
+# con los mismos sets
 set.seed(27) 
 train_idx <- sample(1:nrow(X), size = 0.7 * nrow(X))
 X.train <- X[train_idx,]
 y.train <- y[train_idx]
-X.train <- X[-train_idx,]
-y.train <- y[-train_idx]
+X.test <- X[-train_idx,]
+y.test <- y[-train_idx]
 ```
+
+
+## Modelo de Ridge
+
+Para utilizar el modelo de Ridge con `glmnet` debemos poner el parámetro $\alpha = 0$. Utilizaremos un *grid* con 200 valores de $\lambda$ diferentes, desde $10^{4}$ hasta $10^{-4}$. A partir del modelo, podemos obtener el conjunto de coeficientes y los lambdas correspondientes a cada uno de los 200 modelos obtenidos.
+
+```{r}
+lambdas = 10^seq(4,-4, length = 200)
+
+ridge.model <- glmnet(X.train, y.train, alpha = 0, lambda = lambdas)
+# Obtenemos los coeficientes y los lambdas
+ridge.coefs <- as.matrix(ridge.model$beta)
+ridge.lambda <- ridge.model$lambda
+
+matplot(log(ridge.lambda), t(ridge.coefs), type = "l", lty = 1, col = rainbow(nrow(ridge.coefs)),
+        xlab = "log(λ)", ylab = "Coeficientes", main = "Ridge: Coeficientes vs log(λ)")
+legend("topright", legend = colnames(X), col = rainbow(nrow(ridge.coefs)), lty = 1, cex = 0.6)
+```
+
+Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx (-\inf,-4)$, donde mientras el parámetro `lcp` tiene un coeficiente negativo, el resto de predictores tiene parámetros positivos. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes excepto el de `lcp`, que ahora crece y es positivo. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. El valor óptimo de $\lambda$ debería encontrarse en la zona intermedia de la gráfica, ya que no tendría demasiado sentido que el `lcp` tenga un coeficiente negativo en nuestra predicción.
+
+Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=0$:
+
+```{r}
+# Obtenemos el mejor valor de lambda usando cross-validation
+cv.ridge.model <- cv.glmnet(X.train, y.train, alpha=0, lambda=lambdas)
+lambda.min.ridge <- cv.ridge.model$lambda.min
+lambda.min.ridge
+```
+
+- Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.ridge,4)`$.
+- Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.ridge),4)`$.
+
+A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Ridge, indicando con una línea vertical azul la posición del $\lambda$ óptimo:
+
+```{r}
+plot(cv.ridge.model)
+abline(v=log(lambda.min.ridge), col=4)
+```
+
+Vamos ahora a hacer la predicción de `lpsa` usando el conjunto de testeo.
+
+```{r}
+pred.ridge <- predict(cv.ridge.model, s = lambda.min.ridge, newx = X.test)
+```
+
+
 
 
