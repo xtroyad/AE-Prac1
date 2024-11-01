@@ -400,7 +400,7 @@ y <- datos_usados$lpsa
 
 # Creamos los conjuntos de train y test, especificando la seed para poder reproducir la ejecución
 # con los mismos sets
-set.seed(27) 
+set.seed(123) 
 train_idx <- sample(1:nrow(X), size = 0.7 * nrow(X))
 X.train <- X[train_idx,]
 y.train <- y[train_idx]
@@ -408,10 +408,9 @@ X.test <- X[-train_idx,]
 y.test <- y[-train_idx]
 ```
 
-
 ## Modelo de Ridge
 
-Para utilizar el modelo de Ridge con `glmnet` debemos poner el parámetro $\alpha = 0$. Utilizaremos un *grid* con 200 valores de $\lambda$ diferentes, desde $10^{4}$ hasta $10^{-4}$. A partir del modelo, podemos obtener el conjunto de coeficientes y los lambdas correspondientes a cada uno de los 200 modelos obtenidos.
+Para utilizar el modelo de Ridge con `glmnet` debemos poner el parámetro $\alpha = 0$. Utilizaremos un *grid* con 200 valores de $\lambda$ diferentes, desde $10^{4}$ hasta $10^{-4}$. Estos valores se han determinado después de realizar la gráfica varias veces para asegurarnos de que las regiones que en ella se observan tienen una representación similar. A partir del modelo, podemos obtener el conjunto de coeficientes y los lambdas correspondientes a cada uno de los 200 modelos obtenidos.
 
 ```{r}
 lambdas = 10^seq(4,-4, length = 200)
@@ -423,6 +422,7 @@ ridge.lambda <- ridge.model$lambda
 
 matplot(log(ridge.lambda), t(ridge.coefs), type = "l", lty = 1, col = rainbow(nrow(ridge.coefs)),
         xlab = "log(λ)", ylab = "Coeficientes", main = "Ridge: Coeficientes vs log(λ)")
+abline(v=log(lambda.min.ridge), col=4)
 legend("topright", legend = colnames(X), col = rainbow(nrow(ridge.coefs)), lty = 1, cex = 0.6)
 ```
 
@@ -431,10 +431,13 @@ Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, 
 Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=0$:
 
 ```{r}
+# La seleccion hecha en el CV es tambien aleatoria, asi que debebemos especificar la 
+# seed para asegurarnos de que podemos reprocir la prueba
+set.seed(123) 
 # Obtenemos el mejor valor de lambda usando cross-validation
 cv.ridge.model <- cv.glmnet(X.train, y.train, alpha=0, lambda=lambdas)
 lambda.min.ridge <- cv.ridge.model$lambda.min
-lambda.min.ridge
+log(lambda.min.ridge)
 ```
 
 - Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.ridge,4)`$.
@@ -453,6 +456,60 @@ Vamos ahora a hacer la predicción de `lpsa` usando el conjunto de testeo.
 pred.ridge <- predict(cv.ridge.model, s = lambda.min.ridge, newx = X.test)
 ```
 
+## Modelo de Lasso
+
+Para utilizar el modelo de Lasso con `glmnet` debemos poner el parámetro $\alpha = 1$. Utilizaremos el mismo *grid* de \lambda usado para el modelo de *Ridge*, pero con valores de $\lambda$ entre $10^1$ y $10^{-4}$, valores que obtenemos de igual manera tras reproducir la gráfica varias veces. Después procedemos de forma similar.
+
+```{r}
+lambdas = 10^seq(1,-4, length = 200)
+lasso.model <- glmnet(X.train, y.train, alpha = 1, lambda = lambdas)
+# Obtenemos los coeficientes y los lambdas
+lasso.coefs <- as.matrix(lasso.model$beta)
+lasso.lambda <- lasso.model$lambda
+
+matplot(log(lasso.lambda), t(lasso.coefs), type = "l", lty = 1, col = rainbow(nrow(lasso.coefs)),
+        xlab = "log(λ)", ylab = "Coeficientes", main = "Lasso: Coeficientes vs log(λ)")
+legend("topright", legend = colnames(X), col = rainbow(nrow(lasso.coefs)), lty = 1, cex = 0.6)
+```
+
+Podemos observar un gráfico similar al obtenido para *Ridge*, con la diferencia de que *Lasso* sí elimina predictores, es decir hace sus coeficientes 0. Contando esta diferencia, vemos también una representación análoga de las 3 regiones que vimos en el gráfico del modelo de *Ridge*, con una primera región donde el coeficiente de `lcp` es negativo, hasta que se elimina, una región intermedia donde se regulan el resto de parámetros, y una final donde se eliminan todos los coeficientes (en *Ridge* también tendían a 0). Es por esto que podemos suponer que, también en este caso, el valor óptimo de $\lambda$ se encontrará en la región intermedia.
+
+También podemos visualizar el `plot` por defecto del modelo de *Lasso*, el cual nos muestra la evolución de los coeficientes con el `L1 Norm`, que representa el error que se intenta minimizar al utilizar este modelo:
+
+$$
+L1_\text{Norm} = RSS + \lambda \sum ^p_{j=1}|\beta_j|
+$$
+
+```{r}
+plot(lasso.model, col = rainbow(nrow(lasso.coefs)))
+legend("topright", legend = colnames(X), col = rainbow(nrow(lasso.coefs),start=0), lty = 1, cex = 0.6)
+```
 
 
+Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=1$:
 
+```{r}
+# La seleccion hecha en el CV es tambien aleatoria, asi que debebemos especificar la 
+# seed para asegurarnos de que podemos reprocir la prueba
+set.seed(123)
+# Obtenemos el mejor valor de lambda usando cross-validation
+cv.lasso.model <- cv.glmnet(X.train, y.train, alpha=1, lambda=lambdas)
+lambda.min.lasso <- cv.lasso.model$lambda.min
+lambda.min.lasso
+```
+
+- Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.lasso,4)`$.
+- Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.lasso),4)`$.
+
+A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Lasso, indicando con una línea vertical azul la posición del $\lambda$ óptimo:
+
+```{r}
+plot(cv.lasso.model)
+abline(v=log(lambda.min.lasso), col=4)
+```
+
+Vamos ahora a hacer la predicción de `lpsa` usando el conjunto de testeo.
+
+```{r}
+pred.lasso <- predict(cv.lasso.model, s = lambda.min.lasso, newx = X.test)
+```
