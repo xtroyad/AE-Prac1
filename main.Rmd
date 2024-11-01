@@ -386,9 +386,26 @@ $$
 
 # 6. Modelo de Ridge y Lasso
 
-Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro set de datos y creamos el *training set*.
+Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro conjunto de datos y creamos el *training set*. Para crear nuestro training set utilizaremos el 70% de las entradas de nuestro conjunto de datos.
 
 ```{r}
 library(glmnet)
+
+# Preparamos un dataset sin las variables que no usamos
+datos_usados <- subset(prostate, select = -c(age, pgg45, gleason))
+
+# Dividimos el dataset entre predictores y el valor a predecir
+X <- as.matrix(datos_usados[, -which(names(datos_usados) == "lpsa")])
+y <- datos_usados$lpsa
+
+# Creamos los conjuntos de train y test, especificando la seed para poder reproducir la ejecución
+# con los mismos datos pseudo-aleatorios
+set.seed(27) 
+train_idx <- sample(1:nrow(X), size = 0.7 * nrow(X))
+X.train <- X[train_idx,]
+y.train <- y[train_idx]
+X.train <- X[-train_idx,]
+y.train <- y[-train_idx]
 ```
+
 
