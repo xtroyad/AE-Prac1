@@ -93,14 +93,14 @@ Tras revisar los histogramas realizados en el subapartado 2 podemos concluir que
 
 El objetivo de poner algunas de las variables en escala logarítmica es el de facilitar su posterior análisis por varios motivos:
 
-- Reducir la asimetría en casos en los que la distribución está muy sobrecargada en uno de sus extremos donde algunos valores excepcionales distorsionarían las estadísticas de la variable, haciendo que sus distribuciones se asemejen más a las de una distribución normal (como se observa en `lcavol`, `lweight` y `lpsa`).
-- Hacer que algunas variables se comporten de forma lineal cuando en escala natural no lo harían.
+-   Reducir la asimetría en casos en los que la distribución está muy sobrecargada en uno de sus extremos donde algunos valores excepcionales distorsionarían las estadísticas de la variable, haciendo que sus distribuciones se asemejen más a las de una distribución normal (como se observa en `lcavol`, `lweight` y `lpsa`).
+-   Hacer que algunas variables se comporten de forma lineal cuando en escala natural no lo harían.
 
 Además, cabe añadir que en los campos de la biología y la química es común usar escalas logarítmicas cuando estas hacen más fácil la interpretación de los datos.
 
 # 2. Análisis de variables categóricas
 
-Para convertir las variables `svi` y `gleason` a categóricas usamos la función `factor`. 
+Para convertir las variables `svi` y `gleason` a categóricas usamos la función `factor`.
 
 ```{r}
 prostate$svi <- factor(prostate$svi)
@@ -158,7 +158,7 @@ Por lo tanto, un `r gleason.pct7.r`% de los pacientes con un `svi` de 0 presenta
 
 ## Estas dos variables, ¿son independientes?
 
-Vistos los resultados de estos dos últimos subapartados, podemos pensar que estas variables están relacionadas. Además, ya en el apartado 2 se vio como también podría existir una posible relación entre las variables y se le trató de dar una explicación lógica. 
+Vistos los resultados de estos dos últimos subapartados, podemos pensar que estas variables están relacionadas. Además, ya en el apartado 2 se vio como también podría existir una posible relación entre las variables y se le trató de dar una explicación lógica.
 
 Para probar si realmente existe esta relación entre variables, exponemos los datos a un test de independencia *chi cuadrado*, cuya implementación en R es simple y rápida. En este test queremos probar que las variables están relacionadas, lo cual es nuestra hipótesis $H_1$, por lo que la hipótesis nula $H_0$ será que estas son independientes:
 
@@ -191,7 +191,7 @@ summary(modelo_lineal)
 
 ### Ecuación del Modelo
 
-La ecuación del modelo de regresión lineal es: 
+La ecuación del modelo de regresión lineal es:
 
 $$
 \text{lpsa} = 1.50730 + 0.71932 \cdot \text{lcavol}
@@ -204,29 +204,6 @@ $$
 ### Pendiente ($\beta_1$)
 
 -   El coeficiente para `lcavol` es **0.71932**. Esto sugiere que, por cada unidad de incremento en `lcavol`, se espera que `lpsa` aumente en aproximadamente **0.71932** unidades.
-
-### Residuos
-
--   Estadísticas de los residuos:
-    -   **Mínimo**: -1.67624
-    -   **Máximo**: 1.89672
--   Esto indica variaciones en los errores de predicción.
-
-### Error Estándar de los Residuos
-
--   El error estándar de los residuos es **0.7875**, indicando que las predicciones están, en promedio, a **0.7875** unidades de `lpsa` de los valores reales.
-
-### R-squared (R²)
-
--   El $R^2$ múltiple es **0.5394**, lo que significa que aproximadamente el **53.94%** de la variabilidad en `lpsa` se puede explicar por la variabilidad en `lcavol`.
-
-### F-statistic
-
--   El valor de la estadística F es **111.3** con un valor p-value a **2.2e-16**, indicando que al menos uno de los predictores tiene un efecto significativo en `lpsa`.
-
-### Conclusión
-
-En resumen, el modelo de regresión lineal simple muestra que hay una relación positiva y significativa entre `lcavol` y `lpsa`. A medida que el logaritmo del volumen del cáncer (`lcavol`) aumenta, también se espera que el logaritmo del antígeno prostático específico (`lpsa`) aumente. El modelo es estadísticamente significativo.
 
 ## 4.2 Plot de los datos junto a la recta de regresión.
 
@@ -251,7 +228,7 @@ labs(title = "Relación entre lcavol y lpsa",
 theme_minimal()
 ```
 
-## 4.3 Intervalos de confianza para los coeficientes del modelo con una confianza de 0.95.
+## 4.3 Intervalos de confianza para los coeficientes del modelo con una confianza de 0.95
 
 Los intervalos de confianza al 95% para los coeficientes del modelo son importantes para entender la precisión de las estimaciones. A continuación se presentan los intervalos calculados:
 
@@ -259,13 +236,15 @@ Los intervalos de confianza al 95% para los coeficientes del modelo son importan
 confint(modelo_lineal, level = 0.95)
 ```
 
--   **Intercepto**: El intervalo es de **1.2652** a **1.7494**, lo que nos indica que es significativo y no incluye 0, sugiriendo que hay un valor real positivo.
+Con esto podemos estimar que con ausencia de un tumor medido (`lcavol`), el `psa` se encontrará entre valores de 1.26 y 1.74 ng/m, en su medida logarítmica.
 
-<!-- -->
+Ademas, podemos estimar que por cada cm (10mm) de tumor aumentado, el PSA aumenta en unidades comprendidos entre 5.8 y 8.5 ng/m.
 
--   **Coeficiente de `lcavol`**: El intervalo va de **0.5839** a **0.8547**, mostrando que `lcavol` tiene un efecto positivo y significativo sobre `lpsa`. Este resultado implica que un aumento en `lcavol` está asociado con un aumento en `lpsa`.
+En el análisis de regresión lineal, se ha observado que tanto el coeficiente del intercepto como el coeficiente de `lcavol` presentan valores $p$ muy pequeños $(< 2e-16)$. Esto indica que podemos rechazar la hipótesis nula $(H_0)$ de que los "verdaderos" coeficientes son nulos. Específicamente, esto significa que existe una relación estadísticamente significativa entre el volumen del cáncer (`lcavol`) y el nivel de antígeno específico de la próstata (`lpsa`).
 
-## 4.4 Definición de RSE y su valor.
+El valor t (t-statistic) para el coeficiente de `lcavol` es 10.55, lo que indica una fuerte relación entre el volumen del cáncer y el nivel de PSA. Además, el p-value correspondiente a este valor t es extremadamente bajo. Esto significa que la probabilidad de obtener un valor tan alto o más, suponiendo que no hay relación entre estas variables (es decir, que la hipótesis nula $H_0$ es cierta), es prácticamente cero. En otras palabras, este resultado sugiere que hay una conexión significativa entre el volumen del cáncer y los niveles de antígeno específico de la próstata.
+
+## 4.4 RSE y la eficacia del modelo.
 
 El **Error Estándar de los Residuos (RSE)** es una medida de la cantidad de variabilidad de los residuos (la diferencia entre los valores observados y los valores predichos por el modelo) en un modelo de regresión lineal. Se utiliza para evaluar la precisión de las predicciones del modelo. Un RSE más bajo indica que el modelo tiene un mejor ajuste a los datos.
 
@@ -289,9 +268,11 @@ Si echamos un vistazo de nuevo a nuestro resultado:
 summary(modelo_lineal)
 ```
 
+### **RSE**
+
 Un RSE de 0.7875 indica que, en promedio, las predicciones del modelo se desvían de los valores observados de la variable de respuesta (`lpsa`) en aproximadamente 0.7875 unidades en la escala logarítmica.
 
-## 4.5 Estudio de la eficacia del modelo.
+Indicando que por cada cm(10mm) de aumento en el `lcavol` tenemos un desvía de 7.8 ng/m.
 
 ### **R-cuadrado (R²)**
 
@@ -309,26 +290,6 @@ $R^2$ Ajustado = 0.5346
 
 -   **Interpretación**: El $R^2$ ajustado penaliza el $R^2$ por el número de predictores en el modelo, lo que lo hace más adecuado cuando se comparan modelos con diferentes números de variables. Este valor indica que el modelo tiene un ajuste similar al $R^2$, sugiriendo que el volumen de cáncer sigue siendo un predictor significativo.
 
-### **Análisis de Varianza**
-
-El estadístico F:
-
-**F-estadístico = 111.3, p-valor \< 2.2e-16**
-
--   **Interpretación**: Este resultado indica que el modelo en su conjunto es significativamente mejor que un modelo sin variables predictivas (modelo nulo). Un p-valor extremadamente bajo sugiere que al menos una de las variables predictivas (en este caso, `lcavol`) es relevante para predecir `lpsa`.
-
-### **Error Estándar de los Residuos (RSE)**
-
-Como mencionamos anteriormente, el RSE es:
-
-**RSE = 0.7875**
-
--   **Interpretación**: Este valor indica el tamaño promedio de los errores en las predicciones del modelo. Un RSE relativamente bajo en comparación con la variabilidad total en `lpsa` indica que el modelo tiene un buen ajuste.
-
-### Resumen
-
-En conjunto, el modelo de regresión lineal simple muestra una eficacia razonable para predecir los niveles de PSA en función del volumen de cáncer. La combinación de un $R^2$ moderado, un p-valor significativo y un RSE bajo sugiere que la relación entre `lcavol` y `lpsa` es relevante.
-
 ## 4. 6 Interpretación del Modelo Lineal (`psa` y `cavol`)
 
 ### **Ecuación del Modelo**
@@ -341,7 +302,8 @@ $$
 
 ### Relación entre PSA y cavol
 
-1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es: 
+1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es:
+
     $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
     $$
@@ -350,7 +312,8 @@ $$
     ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
     $$
 
-2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial: 
+2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial:
+
     $$
     \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
     $$
@@ -363,7 +326,8 @@ $$
     \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol})})^{0.71932}
     $$
 
-3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo: 
+3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo:
+
     $$
     \text{cavol} = e^{ln(\text{cavol})}
     $$
@@ -374,7 +338,8 @@ $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
     $$
 
-4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como: 
+4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como:
+
     $$
     \text{PSA} = C \cdot \text{cavol}^{b}
     $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
@@ -383,6 +348,82 @@ $$
 
 -   **C**: Este es un coeficiente constante que representa el nivel de `PSA` cuando `cavol` es igual a 1 (o la unidad de referencia).
 -   **b (0.71932)**: Indica que por cada aumento en el volumen de cáncer (`cavol`), el `PSA` aumenta en un porcentaje específico que depende del valor de `cavol`.
+
+# 5. Regresión lineal múltiple.
+
+## 5.1 Observación de correlaciones entre variables.
+
+```{r}
+library(corrplot)
+
+cor_data = prostate %>% select(-age, -pgg45, -gleason, -svi)
+
+cor_matrix <- cor(cor_data)
+
+# Quitamos las relaciones (x, x), puede ser menos intuitiva de interpretar, pero
+# los colores consiguen ser más descriptivos.
+corrplot(cor_matrix, 
+         diag = FALSE, 
+         method = "circle", 
+         type = "upper", 
+         tl.col = "black", 
+         tl.srt = 25, 
+         title = "Matriz de Correlación entre Variables")
+
+print(cor_matrix)
+```
+
+La matriz de correlación muestra las correlaciones de Pearson entre las variables del conjunto de datos, con valores que van de -1 a 1.
+
+### Análisis de la Matriz de Correlación
+
+Se ha realizado un análisis de correlación entre las variables del conjunto de datos, excluyendo las siguientes variables: **`age`**, **`pgg45`**, **`gleason`**, y **`svi`**. Las variables consideradas son: **`lcavol`**, **`lweight`**, **`lbph`**, **`lcp`**, y **`lpsa`**. A continuación se presentan los resultados y las interpretaciones:
+
+1.  **`lcavol`**:
+    -   **Máxima correlación**: `lpsa` (0.734).
+    -   **Interpretación**: La fuerte correlación entre el volumen del cáncer en escala logarítmica (`lcavol`) y el nivel de antígeno específico de la próstata (PSA) sugiere que a medida que aumenta el volumen del cáncer, también tienden a aumentar los niveles de PSA.
+2.  **`lpsa`**:
+    -   **Máxima correlación**: `lcavol` (0.734).
+    -   **Interpretación**: Refuerza la conexión entre el nivel de PSA y el volumen del cáncer. Esto implica que los médicos pueden utilizar el PSA como un indicador indirecto del volumen tumoral y, por lo tanto, de la severidad del cáncer.
+3.  **`lweight`**:
+    -   **Máxima correlación**: `lbph` (0.442).
+    -   **Interpretación**: La correlación entre el peso en escala logarítmica (`lweight`) y la hipertrofia benigna de próstata (`lbph`) indica que hay una relación positiva entre ambos. Esto sugiere que los hombres con mayor peso pueden tener mayor riesgo de desarrollar condiciones benignas en la próstata.
+4.  **`lbph`**:
+    -   **Máxima correlación**: `lweight` (0.442).
+    -   **Interpretación**: Similar a lo mencionado anteriormente, esta correlación sugiere que el aumento de peso podría estar relacionado con la aparición de hipertrofia benigna, sugiriendo un vínculo en la salud prostática.
+5.  **`lcp`**:
+    -   **Máxima correlación**: `lcavol` (0.675).
+    -   **Interpretación**: La correlación entre los niveles de PSA en escala logarítmica (`lcp`) y el volumen del cáncer (`lcavol`) indica que a mayor volumen tumoral, los niveles de PSA también tienden a ser más altos. Esto es importante para evaluar la progresión del cáncer y determinar el tratamiento adecuado.
+
+# 5.2 Modelo de regresión lineal para predecir `lpsa`.
+
+```{r}
+modelo_lpsa <- lm(lpsa ~ lcavol + lweight + lbph + lcp, data = prostate)
+
+summary(modelo_lpsa)
+```
+
+1.  **Coeficientes**:
+
+-   **`lcavol`**: 0.58479 (muy significativo, p = 3.65e-09). Esto indica que, manteniendo las otras variables constantes, un aumento de una unidad en `lcavol` se asocia con un aumento de 0.58479 unidades en `lpsa`.
+
+-   **`lweight`**: 0.58630 (significativo, p = 0.0055). Al igual que `lcavol`, un aumento de una unidad en `lweight` también se asocia con un incremento en `lpsa`, lo que sugiere que el peso del paciente puede influir en los niveles de PSA.
+
+-   **`lbph`**: 0.05412 (no significativo, p = 0.3571). Esto sugiere que la hipertrofia benigna de próstata no tiene un efecto significativo en los niveles de PSA.
+
+-   **`lcp`**: 0.09102 (no significativo, p = 0.2178). Similar a `lbph`, no parece tener un efecto significativo en `lpsa`. Su variación no influye en el resultado.
+
+2.  **Rendimiento**:
+
+El modelo tiene un R² ajustado de aproximadamente 0.59, lo que indica que, aunque hay una correlación significativa con `lpsa`, hay un 40% de la variación que no se explica por las variables incluidas. Esto sugiere que pueden existir otros factores que influyen en `lpsa` que no están siendo considerados en el modelo actual.
+
+El RSE es 0.7405, lo que indica el tamaño promedio de los errores en las predicciones del modelo. Un RSE relativamente bajo.
+
+## Conclusiones
+
+Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
+
+La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
 
 # 6. Modelo de Ridge y Lasso
 
