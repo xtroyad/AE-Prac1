@@ -205,29 +205,6 @@ $$
 
 -   El coeficiente para `lcavol` es **0.71932**. Esto sugiere que, por cada unidad de incremento en `lcavol`, se espera que `lpsa` aumente en aproximadamente **0.71932** unidades.
 
-### Residuos
-
--   Estadísticas de los residuos:
-    -   **Mínimo**: -1.67624
-    -   **Máximo**: 1.89672
--   Esto indica variaciones en los errores de predicción.
-
-### Error Estándar de los Residuos
-
--   El error estándar de los residuos es **0.7875**, indicando que las predicciones están, en promedio, a **0.7875** unidades de `lpsa` de los valores reales.
-
-### R-squared (R²)
-
--   El $R^2$ múltiple es **0.5394**, lo que significa que aproximadamente el **53.94%** de la variabilidad en `lpsa` se puede explicar por la variabilidad en `lcavol`.
-
-### F-statistic
-
--   El valor de la estadística F es **111.3** con un valor p-value a **2.2e-16**, indicando que al menos uno de los predictores tiene un efecto significativo en `lpsa`.
-
-### Conclusión
-
-En resumen, el modelo de regresión lineal simple muestra que hay una relación positiva y significativa entre `lcavol` y `lpsa`. A medida que el logaritmo del volumen del cáncer (`lcavol`) aumenta, también se espera que el logaritmo del antígeno prostático específico (`lpsa`) aumente. El modelo es estadísticamente significativo.
-
 ## 4.2 Plot de los datos junto a la recta de regresión.
 
 Crearemos una gráfico de dispersión de `lcavol` vs `lpsa`.
@@ -267,7 +244,7 @@ En el análisis de regresión lineal, se ha observado que tanto el coeficiente d
 
 El valor t (t-statistic) para el coeficiente de `lcavol` es 10.55, lo que indica una fuerte relación entre el volumen del cáncer y el nivel de PSA. Además, el p-value correspondiente a este valor t es extremadamente bajo. Esto significa que la probabilidad de obtener un valor tan alto o más, suponiendo que no hay relación entre estas variables (es decir, que la hipótesis nula $H_0$ es cierta), es prácticamente cero. En otras palabras, este resultado sugiere que hay una conexión significativa entre el volumen del cáncer y los niveles de antígeno específico de la próstata.
 
-## 4.4 Definición de RSE y su valor.
+## 4.4 RSE y la eficacia del modelo.
 
 El **Error Estándar de los Residuos (RSE)** es una medida de la cantidad de variabilidad de los residuos (la diferencia entre los valores observados y los valores predichos por el modelo) en un modelo de regresión lineal. Se utiliza para evaluar la precisión de las predicciones del modelo. Un RSE más bajo indica que el modelo tiene un mejor ajuste a los datos.
 
@@ -291,11 +268,11 @@ Si echamos un vistazo de nuevo a nuestro resultado:
 summary(modelo_lineal)
 ```
 
+### **RSE**
+
 Un RSE de 0.7875 indica que, en promedio, las predicciones del modelo se desvían de los valores observados de la variable de respuesta (`lpsa`) en aproximadamente 0.7875 unidades en la escala logarítmica.
 
 Indicando que por cada cm(10mm) de aumento en el `lcavol` tenemos un desvía de 7.8 ng/m.
-
-## 4.5 Estudio de la eficacia del modelo.
 
 ### **R-cuadrado (R²)**
 
@@ -312,26 +289,6 @@ El $R^2$ ajustado, que en este caso es:
 $R^2$ Ajustado = 0.5346
 
 -   **Interpretación**: El $R^2$ ajustado penaliza el $R^2$ por el número de predictores en el modelo, lo que lo hace más adecuado cuando se comparan modelos con diferentes números de variables. Este valor indica que el modelo tiene un ajuste similar al $R^2$, sugiriendo que el volumen de cáncer sigue siendo un predictor significativo.
-
-### **Análisis de Varianza**
-
-El estadístico F:
-
-**F-estadístico = 111.3, p-valor \< 2.2e-16**
-
--   **Interpretación**: Este resultado indica que el modelo en su conjunto es significativamente mejor que un modelo sin variables predictivas (modelo nulo). Un p-valor extremadamente bajo sugiere que al menos una de las variables predictivas (en este caso, `lcavol`) es relevante para predecir `lpsa`.
-
-### **Error Estándar de los Residuos (RSE)**
-
-Como mencionamos anteriormente, el RSE es:
-
-**RSE = 0.7875**
-
--   **Interpretación**: Este valor indica el tamaño promedio de los errores en las predicciones del modelo. Un RSE relativamente bajo en comparación con la variabilidad total en `lpsa` indica que el modelo tiene un buen ajuste.
-
-### Resumen
-
-En conjunto, el modelo de regresión lineal simple muestra una eficacia razonable para predecir los niveles de PSA en función del volumen de cáncer. La combinación de un $R^2$ moderado, un p-valor significativo y un RSE bajo sugiere que la relación entre `lcavol` y `lpsa` es relevante.
 
 ## 4. 6 Interpretación del Modelo Lineal (`psa` y `cavol`)
 
@@ -437,10 +394,6 @@ Se ha realizado un análisis de correlación entre las variables del conjunto de
 5.  **`lcp`**:
     -   **Máxima correlación**: `lcavol` (0.675).
     -   **Interpretación**: La correlación entre los niveles de PSA en escala logarítmica (`lcp`) y el volumen del cáncer (`lcavol`) indica que a mayor volumen tumoral, los niveles de PSA también tienden a ser más altos. Esto es importante para evaluar la progresión del cáncer y determinar el tratamiento adecuado.
-6.  **Conclusiones generales**:
-    -   Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
-    -   La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
-    -   La correlación entre `lcp` y `lcavol` enfatiza la conexión entre el volumen del tumor y los niveles de PSA, lo cual es relevante para la prognosis clínica.
 
 # 5.2 Modelo de regresión lineal para predecir `lpsa`.
 
@@ -452,48 +405,22 @@ summary(modelo_lpsa)
 
 1.  **Coeficientes**:
 
--   **Intercepto**: -0.42786 (no es significativo, p = 0.5600).
-
 -   **`lcavol`**: 0.58479 (muy significativo, p = 3.65e-09). Esto indica que, manteniendo las otras variables constantes, un aumento de una unidad en `lcavol` se asocia con un aumento de 0.58479 unidades en `lpsa`.
 
 -   **`lweight`**: 0.58630 (significativo, p = 0.0055). Al igual que `lcavol`, un aumento de una unidad en `lweight` también se asocia con un incremento en `lpsa`, lo que sugiere que el peso del paciente puede influir en los niveles de PSA.
 
 -   **`lbph`**: 0.05412 (no significativo, p = 0.3571). Esto sugiere que la hipertrofia benigna de próstata no tiene un efecto significativo en los niveles de PSA.
 
--   **`lcp`**: 0.09102 (no significativo, p = 0.2178). Similar a `lbph`, no parece tener un efecto significativo en `lpsa`.
+-   **`lcp`**: 0.09102 (no significativo, p = 0.2178). Similar a `lbph`, no parece tener un efecto significativo en `lpsa`. Su variación no influye en el resultado.
 
-2.  **Residuals**:
+2.  **Rendimiento**:
 
--   Los residuos tienen un rango que va desde -1.55078 hasta 1.78086, con un valor mediano cercano a cero, lo que indica que el modelo está relativamente equilibrado en cuanto a sus predicciones.
+El modelo tiene un R² ajustado de aproximadamente 0.59, lo que indica que, aunque hay una correlación significativa con `lpsa`, hay un 40% de la variación que no se explica por las variables incluidas. Esto sugiere que pueden existir otros factores que influyen en `lpsa` que no están siendo considerados en el modelo actual.
 
-3.  **R-squared**:
-
--   **Multiple R-squared**: 0.6056. Esto significa que aproximadamente el 60.56% de la variación en `lpsa` puede ser explicada por las variables independientes (`lcavol`, `lweight`, `lbph`, `lcp`).
-
--   **Adjusted R-squared**: 0.5884. Este valor ajustado es ligeramente inferior, lo que sugiere que el modelo tiene un ajuste razonable, pero que podría no ser óptimo dado el número de variables en comparación con el número de observaciones.
-
-4.  **F-statistic**: 35.31 (p \< 2.2e-16). Esto indica que, en general, al menos una de las variables independientes es significativamente diferente de cero, lo que sugiere que el modelo tiene validez.
+El RSE es 0.7405, lo que indica el tamaño promedio de los errores en las predicciones del modelo. Un RSE relativamente bajo.
 
 ## Conclusiones
 
-1.  **Significancia de las variables**:
+Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
 
--   Las variables `lcavol` y `lweight` son estadísticamente significativas y tienen un efecto positivo en `lpsa`. Sin embargo, `lbph` y `lcp` no son significativos y no parecen influir en `lpsa`.
-
-2.  **Eficacia del modelo**:
-
--   El modelo tiene un R² ajustado de aproximadamente 0.59, lo que indica que, aunque hay una correlación significativa con `lpsa`, hay un 40% de la variación que no se explica por las variables incluidas. Esto sugiere que pueden existir otros factores que influyen en `lpsa` que no están siendo considerados en el modelo actual.
-
-3.  **Limitaciones**:
-
--   La significancia de las variables se centra en `lcavol` y `lweight`, lo que puede señalar la necesidad de explorar más a fondo el impacto de estas variables en el contexto del cáncer de próstata.
-
--   Podría ser útil considerar la inclusión de variables adicionales que podrían mejorar el ajuste del modelo o explorar interacciones entre variables.
-
-4.  **Recomendaciones**:
-
--   Realizar un análisis de residuales para evaluar supuestos del modelo como la homocedasticidad y la normalidad.
-
--   Considerar un análisis de multicolinealidad para asegurarse de que no haya problemas entre las variables independientes.
-
-En general, el modelo ofrece información valiosa sobre los determinantes de `lpsa`, pero hay margen de mejora en términos de ajuste y comprensión de los factores que contribuyen a esta variable.
+La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
