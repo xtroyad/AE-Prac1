@@ -670,6 +670,32 @@ Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo
 
 ## 8.1 `svi` en función de `lcavol`, `lcp` y `lpsa`
 
+Veamos primero las distribuciones del  `svi` frente a los predictores propuestos:
+
+```{r}
+par(mfrow=c(1,3))
+plot(prostate$svi, prostate$lcavol, xlab="svi", ylab="lcavol")
+plot(prostate$svi, prostate$lcp, xlab="svi", ylab="lcp")
+plot(prostate$svi, prostate$lpsa, xlab="svi", ylab="lpsa")
+```
+
+Como podemos observar, la distribución de `svi` respecto al resto de variables es muy diferenciable. A simple vista podemos ver una clara relación entre valores negativos del `svi` con los tres predictores propuestos.
+
+Vamos ahora a calcular el modelo. Dado que la variable `svi` es binaria (1 o 0), especificamos el parámetro `family=binomial`:
+```{r}
+# Nos aseguramos de que la variable svi esté en formato factor, por si se ha cambiado en algun apartado anterior
+prostate$svi <- as.factor(prostate$svi)
+
+modelo_logistico <- glm(svi ~ lcavol + lcp + lpsa, data = prostate, family = binomial)
+# Creamos una lista con los coeficientes preparados para el display
+coefs = sapply(modelo_logistico$coefficients, function(x) round(x,2))
+```
+
+El modelo resulta en la siguiente función:
+$$
+\text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcavol} + `r coefs[3]` \cdot \text{lcp}+ `r coefs[4]` \cdot \text{lpsa}
+$$
+
 ## 8.2 Conclusiones sobre el modelo
 
 ## 8.3 Predicciones del modelo
