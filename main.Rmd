@@ -698,4 +698,39 @@ $$
 
 ## 8.2 Conclusiones sobre el modelo
 
-## 8.3 Predicciones del modelo
+Veamos el `summary` del modelo:
+
+```{r}
+summary(modelo_logistico)
+```
+
+Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo.
+
+Vamos a realizar una predicción de nuestro set original usando el modelo:
+```{r}
+threshold = 0.5
+log.probs = predict(modelo_logistico, type = "response")
+log.preds = rep(0, length(log.probs))
+log.preds[log.probs > threshold] = 1
+```
+
+Veamos la tabla de valores originales:
+```{r}
+table(log.preds)
+```
+
+Y a continuación la tabla de valores obtenidos:
+```{r}
+table(prostate$svi)
+```
+
+Como se puede observar, el modelo solo falló en 3 ocasiones, dando un $0$ cuando debería ser $1$, lo cual indica que el modelo hizo un buen trabajo al predecir el conjunto de entrenamiento, con un `r round((79+18-3)/(79+18)*100)`% de precisión. Es importante hacer notar que el dataset está cargado hacia `svi = 0`, es decir, hay muchas más observaciones en las que `svi = 1`, lo cual en general no es bueno para la generación de modelos, y en particular puede ser que haya influenciado a esta tendencia al 0 que muestra nuestro modelo. 
+
+De cualquier forma, en esta ocasión no hemos dividido el dataset en *training* y *testing*, por lo que estamos examinando el rendimiento de nuestro modelo en el mismo conjunto de datos con el que lo hemos entrenado. En este caso habría que tener en cuenta dos cosas:
+
+1. La precisión del modelo no es representativa ya que, como decimos, no estamos utilizando un conjunto de testeo.
+2. Al analizar la precisión y obtener un resultado tan bueno, deberíamos tener cuidado con el **overfitting**.
+
+Por estos motivos, se concluye que, a priori, no se puede decir que sea un buen modelo sin realizar primero pruebas de su rendimiento con un set de testeo, además de que mejoraría en gran medida si se entrenara con un set más equilibrado.
+
+## 8.3 Predicción con el modelo
