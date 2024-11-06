@@ -665,3 +665,11 @@ Para responder a si los modelos lineales podrían ser utilizados o no, revisamos
 - $R^2_\text{adj} = `r resultados$Multiple[3]`$
 
 Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría ser utilizado para realizar predicciones.
+
+# 8. Regresión Logística
+
+## 8.1 `svi` en función de `lcavol`, `lcp` y `lpsa`
+
+## 8.2 Conclusiones sobre el modelo
+
+## 8.3 Predicciones del modelo
