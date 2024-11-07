@@ -774,5 +774,34 @@ Observamos como hemos conseguido predecir un valor más utilizando este modelo, 
 
 ## 8.3 Predicción con el modelo
 
+Vamos a utilizar nuestro modelo para predecir un valor de `svi` para valores concretos de los predictores `lcavol`, `lcp` y `lpsa`. Utilizamos los siguientes valores:
 
+- `lcavol` = 2.8269,
+- `lcp` = 1.843,
+- `lpsa` = 3.285
 
+Primero creamos el `data.frame` que contenga estos datos:
+```{r}
+pred_data = data.frame(
+  lcavol = 2.8269,
+  lcp = 1.843,
+  lpsa = 3.285
+)
+```
+
+Realizamos la predicción usando nuestro modelo:
+```{r}
+prob <- predict(modelo_logistico, newdata = pred_data, type = "response")
+```
+
+Obtenemos una probabilidad del `r round(prob*100,1)`% de que `svi`$=1$ con estos valores de los predictores. 
+
+### Predicción usando el modelo alternativo
+
+Vamos a realizar la misma predicción, pero esta vez utilizando el modelo propuesto en el subapartado anterior, que se desprendía del predictor `lcavol` por su baja significancia estadística. Dado que los datos ya están preparados, podemos calcular la probabilidad con un solo comando (se ignora el valor de `lcavol` al realizar la predicción):
+
+```{r}
+prob.nolcavol <- predict(modelo_logistico.nolcavol, newdata = pred_data, type = "response")
+```
+
+Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ con estos valores de los predictores. Podemos observar que la probabilidad es prácticamente la misma que con el modelo anterior.
