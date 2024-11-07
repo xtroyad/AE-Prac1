@@ -704,7 +704,7 @@ Veamos el `summary` del modelo:
 summary(modelo_logistico)
 ```
 
-Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo.
+Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Además, recordemos del **apartado 5** que `lcavol` guardaba una alta correlación con las otras variables, `lcp` y `lpsa`. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo. 
 
 Vamos a realizar una predicción de nuestro set original usando el modelo:
 ```{r}
@@ -733,4 +733,46 @@ De cualquier forma, en esta ocasión no hemos dividido el dataset en *training* 
 
 Por estos motivos, se concluye que, a priori, no se puede decir que sea un buen modelo sin realizar primero pruebas de su rendimiento con un set de testeo, además de que mejoraría en gran medida si se entrenara con un set más equilibrado.
 
+### Modelo alternativo
+
+Vistos los resultados obtenidos con el modelo anterior, nos preguntamos si podríamos mejorarlo más. Y es que, como explicamos, el predictor `lcavol` tiene una baja significancia, esto junto con la alta correlación con el resto de predictores del modelo nos lleva a pensar que podemos mejorar el modelo al eliminar este predictor.
+
+Vamos a proceder de forma similar al modelo original:
+```{r}
+modelo_logistico.nolcavol <- glm(svi ~ lcp + lpsa, data = prostate, family = binomial)
+# Creamos una lista con los coeficientes preparados para el display
+coefs = sapply(modelo_logistico.nolcavol$coefficients, function(x) round(x,2))
+summary(modelo_logistico.nolcavol)
+```
+
+El modelo resulta en la siguiente función:
+$$
+\text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcp}+ `r coefs[3]` \cdot \text{lpsa}
+$$
+
+Además, los $p-$values nos muestran que todas las variables utilizadas, `lcp` y `lpsa` en este caso, son significantes. Vamos a comparar los resultados obtenidos 
+
+Vamos a realizar una predicción de nuestro set original usando el modelo:
+```{r}
+threshold = 0.5
+log.probs = predict(modelo_logistico.nolcavol, type = "response")
+log.preds = rep(0, length(log.probs))
+log.preds[log.probs > threshold] = 1
+```
+
+Veamos la tabla de valores originales:
+```{r}
+table(log.preds)
+```
+
+Y a continuación la tabla de valores obtenidos:
+```{r}
+table(prostate$svi)
+```
+
+Observamos como hemos conseguido predecir un valor más utilizando este modelo, que se desprende de la variable `lcavol`, llegando así al `r round((79+18-2)/(79+18)*100)`% de precisión. Sin embargo, como también mencionamos con el modelo anterior, debemos ser críticos con este modelo y prestar especialmente atención al posible **overfitting** y al desbalance del conjunto de datos.
+
 ## 8.3 Predicción con el modelo
+
+
+
