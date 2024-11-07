@@ -9,12 +9,14 @@ date: "2024-10-30"
 ## 0.1 Configuración inicial. Carga de librerías.
 
 **Nota: Nos aseguramos de tener el paquete `ElemStatLearn` instalado. Si no: `install.packages(lib_URL)`**
+**Nota: Nos aseguramos de tener el paquete `ElemStatLearn` instalado. Si no: `install.packages(lib_URL)`**
 
 ```{r}
-
 lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz'
 # install.packages(lib_URL)
+# install.packages("plotly")
 
+library(plotly)
 library(ElemStatLearn)
 library(dplyr)
 ```
@@ -136,25 +138,56 @@ En el caso de la edad nos encontramos una distribución que podría recordar a l
 ```{r}
 # Filtramos por gleason = 7
 gleason.7 <- subset(prostate, gleason == 7)
-svi.pct0 <- sum(gleason.7$svi == 0) / nrow(gleason.7) * 100
-svi.pct0.r = round(svi.pct0)
-svi.pct0
+gleason.7.props <- prop.table(table(gleason.7$svi))*100
 ```
 
-Por lo tanto, un `r svi.pct0.r`% de los pacientes con índice de Gleason igual a 7 presenta un `svi` de 0.
+Por lo tanto, un `r round(gleason.7.props["0"])`% de los pacientes con índice de Gleason igual a 7 presenta un `svi` de 0. Podemos representar esta distribución mediante un gráfico de sectores:
+
+```{r}
+fig <- plot_ly(
+  labels = names(gleason.7.props),
+  values = as.numeric(gleason.7.props),
+  type="pie",
+  textinfo = "label+percent",
+  hoverinfo = "none",
+  insidetextorientation = "radial",
+  height = 400
+) %>%
+  layout(
+    title = "Distribución del índice de Gleason para pacientes con svi = 0",
+    showlegend = TRUE
+  )
+fig
+```
+
 
 ## ¿Qué porcentaje de pacientes con índice svi igual a 0 tiene la puntuación de Gleason igual a 7?
 
 ```{r}
 # Filtramos por gleason = 7
 svi.0 <- subset(prostate, svi == 0)
-# En el apartado anterior cambiamos svi=0 por la categoría No
-gleason.pct7 <- sum(svi.0$gleason == 7) / nrow(svi.0) * 100
-gleason.pct7.r = round(gleason.pct7)
-gleason.pct7
+svi.0.props <- prop.table(table(svi.0$gleason))*100
 ```
 
-Por lo tanto, un `r gleason.pct7.r`% de los pacientes con un `svi` de 0 presenta un índice de Gleason igual a 7.
+Por lo tanto, un `r round(svi.0.props["7"])`% de los pacientes con un `svi` de 0 presenta un índice de Gleason igual a 7. Podemos visualizar la distribución del índice de Gleason para pacientes con un `svi`$=0$ mediante un gráfico de sectores:
+
+```{r}
+fig <- plot_ly(
+  labels = names(svi.0.props),
+  values = as.numeric(svi.0.props),
+  type="pie",
+  textinfo = "label+percent",
+  hoverinfo = "none",
+  insidetextorientation = "radial" ,
+  height = 400
+) %>%
+  layout(
+    title = "Distribución del índice de Gleason para pacientes con svi = 0",
+    showlegend = TRUE
+  )
+fig
+```
+
 
 ## Estas dos variables, ¿son independientes?
 
@@ -304,45 +337,46 @@ $$
 
 1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es:
 
-    $$
+  $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
-    $$
+  $$
 
-    $$
+  $$
     ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
-    $$
+  $$
 
 2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial:
 
-    $$
+  $$
     \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
-    $$
+  $$
 
-    $$
+  $$
     \text{PSA} = e^{1.50730 } + e^{(0.71932 \times ln(\text{cavol}))}
-    $$
+  $$
 
-    $$
+  $$
     \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol})})^{0.71932}
-    $$
+  $$
 
 3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo:
 
-    $$
+  $$
     \text{cavol} = e^{ln(\text{cavol})}
-    $$
+  $$
 
     Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 
-    $$
+  $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
-    $$
+  $$
 
 4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como:
 
-    $$
+  $$
     \text{PSA} = C \cdot \text{cavol}^{b}
-    $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
+  $$ 
+    Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
 
 ### Interpretación de la Relación
 
