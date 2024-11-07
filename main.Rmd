@@ -665,3 +665,143 @@ Para responder a si los modelos lineales podrían ser utilizados o no, revisamos
 - $R^2_\text{adj} = `r resultados$Multiple[3]`$
 
 Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría ser utilizado para realizar predicciones.
+
+# 8. Regresión Logística
+
+## 8.1 `svi` en función de `lcavol`, `lcp` y `lpsa`
+
+Veamos primero las distribuciones del  `svi` frente a los predictores propuestos:
+
+```{r}
+par(mfrow=c(1,3))
+plot(prostate$svi, prostate$lcavol, xlab="svi", ylab="lcavol")
+plot(prostate$svi, prostate$lcp, xlab="svi", ylab="lcp")
+plot(prostate$svi, prostate$lpsa, xlab="svi", ylab="lpsa")
+```
+
+Como podemos observar, la distribución de `svi` respecto al resto de variables es muy diferenciable. A simple vista podemos ver una clara relación entre valores negativos del `svi` con los tres predictores propuestos.
+
+Vamos ahora a calcular el modelo. Dado que la variable `svi` es binaria (1 o 0), especificamos el parámetro `family=binomial`:
+```{r}
+# Nos aseguramos de que la variable svi esté en formato factor, por si se ha cambiado en algun apartado anterior
+prostate$svi <- as.factor(prostate$svi)
+
+modelo_logistico <- glm(svi ~ lcavol + lcp + lpsa, data = prostate, family = binomial)
+# Creamos una lista con los coeficientes preparados para el display
+coefs = sapply(modelo_logistico$coefficients, function(x) round(x,2))
+```
+
+El modelo resulta en la siguiente función:
+$$
+\text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcavol} + `r coefs[3]` \cdot \text{lcp}+ `r coefs[4]` \cdot \text{lpsa}
+$$
+
+## 8.2 Conclusiones sobre el modelo
+
+Veamos el `summary` del modelo:
+
+```{r}
+summary(modelo_logistico)
+```
+
+Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Además, recordemos del **apartado 5** que `lcavol` guardaba una alta correlación con las otras variables, `lcp` y `lpsa`. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo. 
+
+Vamos a realizar una predicción de nuestro set original usando el modelo:
+```{r}
+threshold = 0.5
+log.probs = predict(modelo_logistico, type = "response")
+log.preds = rep(0, length(log.probs))
+log.preds[log.probs > threshold] = 1
+```
+
+Veamos la tabla de valores originales:
+```{r}
+table(log.preds)
+```
+
+Y a continuación la tabla de valores obtenidos:
+```{r}
+table(prostate$svi)
+```
+
+Como se puede observar, el modelo solo falló en 3 ocasiones, dando un $0$ cuando debería ser $1$, lo cual indica que el modelo hizo un buen trabajo al predecir el conjunto de entrenamiento, con un `r round((79+18-3)/(79+18)*100)`% de precisión. Es importante hacer notar que el dataset está cargado hacia `svi = 0`, es decir, hay muchas más observaciones en las que `svi = 1`, lo cual en general no es bueno para la generación de modelos, y en particular puede ser que haya influenciado a esta tendencia al 0 que muestra nuestro modelo. 
+
+De cualquier forma, en esta ocasión no hemos dividido el dataset en *training* y *testing*, por lo que estamos examinando el rendimiento de nuestro modelo en el mismo conjunto de datos con el que lo hemos entrenado. En este caso habría que tener en cuenta dos cosas:
+
+1. La precisión del modelo no es representativa ya que, como decimos, no estamos utilizando un conjunto de testeo.
+2. Al analizar la precisión y obtener un resultado tan bueno, deberíamos tener cuidado con el **overfitting**.
+
+Por estos motivos, se concluye que, a priori, no se puede decir que sea un buen modelo sin realizar primero pruebas de su rendimiento con un set de testeo, además de que mejoraría en gran medida si se entrenara con un set más equilibrado.
+
+### Modelo alternativo
+
+Vistos los resultados obtenidos con el modelo anterior, nos preguntamos si podríamos mejorarlo más. Y es que, como explicamos, el predictor `lcavol` tiene una baja significancia, esto junto con la alta correlación con el resto de predictores del modelo nos lleva a pensar que podemos mejorar el modelo al eliminar este predictor.
+
+Vamos a proceder de forma similar al modelo original:
+```{r}
+modelo_logistico.nolcavol <- glm(svi ~ lcp + lpsa, data = prostate, family = binomial)
+# Creamos una lista con los coeficientes preparados para el display
+coefs = sapply(modelo_logistico.nolcavol$coefficients, function(x) round(x,2))
+summary(modelo_logistico.nolcavol)
+```
+
+El modelo resulta en la siguiente función:
+$$
+\text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcp}+ `r coefs[3]` \cdot \text{lpsa}
+$$
+
+Además, los $p-$values nos muestran que todas las variables utilizadas, `lcp` y `lpsa` en este caso, son significantes. Vamos a comparar los resultados obtenidos 
+
+Vamos a realizar una predicción de nuestro set original usando el modelo:
+```{r}
+threshold = 0.5
+log.probs = predict(modelo_logistico.nolcavol, type = "response")
+log.preds = rep(0, length(log.probs))
+log.preds[log.probs > threshold] = 1
+```
+
+Veamos la tabla de valores originales:
+```{r}
+table(log.preds)
+```
+
+Y a continuación la tabla de valores obtenidos:
+```{r}
+table(prostate$svi)
+```
+
+Observamos como hemos conseguido predecir un valor más utilizando este modelo, que se desprende de la variable `lcavol`, llegando así al `r round((79+18-2)/(79+18)*100)`% de precisión. Sin embargo, como también mencionamos con el modelo anterior, debemos ser críticos con este modelo y prestar especialmente atención al posible **overfitting** y al desbalance del conjunto de datos.
+
+## 8.3 Predicción con el modelo
+
+Vamos a utilizar nuestro modelo para predecir un valor de `svi` para valores concretos de los predictores `lcavol`, `lcp` y `lpsa`. Utilizamos los siguientes valores:
+
+- `lcavol` = 2.8269,
+- `lcp` = 1.843,
+- `lpsa` = 3.285
+
+Primero creamos el `data.frame` que contenga estos datos:
+```{r}
+pred_data = data.frame(
+  lcavol = 2.8269,
+  lcp = 1.843,
+  lpsa = 3.285
+)
+```
+
+Realizamos la predicción usando nuestro modelo:
+```{r}
+prob <- predict(modelo_logistico, newdata = pred_data, type = "response")
+```
+
+Obtenemos una probabilidad del `r round(prob*100,1)`% de que `svi`$=1$ con estos valores de los predictores. 
+
+### Predicción usando el modelo alternativo
+
+Vamos a realizar la misma predicción, pero esta vez utilizando el modelo propuesto en el subapartado anterior, que se desprendía del predictor `lcavol` por su baja significancia estadística. Dado que los datos ya están preparados, podemos calcular la probabilidad con un solo comando (se ignora el valor de `lcavol` al realizar la predicción):
+
+```{r}
+prob.nolcavol <- predict(modelo_logistico.nolcavol, newdata = pred_data, type = "response")
+```
+
+Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ con estos valores de los predictores. Podemos observar que la probabilidad es prácticamente la misma que con el modelo anterior.
