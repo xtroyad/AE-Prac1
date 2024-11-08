@@ -25,8 +25,8 @@ Utilizamos `head()` para ver las primeras filas y hacernos una idea de las varia
 ```{r }
 
 data("prostate", package = "ElemStatLearn")
+head(prostate)
 attach(prostate)
-table(svi)
 ```
 
 ## 0.2 Eliminación de datos `TRAIN`.
@@ -685,6 +685,7 @@ ggplot(resultados.long, aes(Metric, Valor, fill = Modelo)) +
 
 ## 6.4 Conclusiones
 
+
 Como podemos observar, el modelo que mejor ha funcionado en nuestro caso es el de la regresión múltiple, teniendo un resultado mejor que el de los otros modelos tras medir su rendimiento usando **MSE**, $R^2$ y $R^2_\text{adj}$ en el conjunto de testeo.
 
 Así, podemos concluir que los modelos que penalizan un número mayor de predictores, en este caso, funciona peor que el modelo de regresión múltiple que no cuenta con esa penalización. Además, tampoco representan una mejora en el rendimiento o en el espacio de almacenamiento, dado que contamos con un número muy limitado de predictores y de observaciones, por lo que no se recomendaría su uso en situaciones similares.
@@ -701,6 +702,8 @@ Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo
 Ajustar el modelo LDA utilizando `svi` como variable de respuesta y `lcavol`, `lcp`, `lpsa` como variables predictoras.
 
 ```{r}
+library(MASS)
+
 lda_model <- lda(svi ~ lcavol + lcp + lpsa, data = prostate)
 ```
 
