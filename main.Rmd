@@ -856,9 +856,6 @@ Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ 
 ```{r}
 # Carga de librerías
 library(MASS)
-library(pls)
-library(corrplot)
-library(caret)
 ```
 
 Primero, creamos nuestro modelo de componentes principales **PCA**:
@@ -869,6 +866,8 @@ pca.data <- prostate[,c("lcavol", "lweight", "lbph", "lcp")]
 pca.data["svi"] <- as.numeric(prostate$svi)
 # Realizamos el PCA
 pca.model <- prcomp(pca.data, scale. = TRUE, center = TRUE)
+pca.var <- pca.model$sdev ^2
+pca.pve <- pca.var / sum(pca.var)
 ```
 
 ### `summary` del modelo
@@ -879,7 +878,17 @@ summary(pca.model)
 
 Podemos observar en la primera fila del `summary` de nuestro modelo, *Standard deviation*, la cantidad de variabilidad que cada componente principal captura de los datos. Como se puede observar, los valores disminuyen con cada componente, siendo la mayor **PC1** y la menor **PC5**.
 
-Las siguientes filas del `summary` ahondan en esta descripción, proporcionándonos valores porcentuales y acumulativos de la descripción de la varianza explicada por cada componente. +Representemos estos valores gráficamente:
+### Desviación estándar de la primera componente principal
+
+La desviación estándar en un análisis de componentes principales representa la cantidad de variabilidad de los datos que es capturada por esta componente, lo cual es una medida clave en el PCA, ya que su objetivo es el de identificar las direcciones, o componentes principales, que mejor capturen la varianza del conjunto de datos.
+
+El primer componente principal `PC1` es, por definición, aquel que caputra la mayor varianza posible, maximizando la varianza en las observaciones proyectadas en esa dirección, con lo cual una gran parte de las diferencias entre observaciones se ven reflejadas a lo largo de esta dirección.
+
+Por tanto, se puede decir que la mayor desviación estándar de esta primera componente es consecuencia del objetivo de un PCA.
+
+### Componentes principales
+
+Las siguientes filas del `summary` ahondan en esta descripción, proporcionándonos valores porcentuales y acumulativos de la descripción de la varianza explicada por cada componente. Representemos estos valores gráficamente:
 ```{r}
 par(mfrow = c(1, 2))
 plot(pca.pve, xlab = "Principal Component",
@@ -890,10 +899,9 @@ plot(cumsum(pca.pve), xlab = "Principal Component",
   ylim = c(0, 1), type = "b")
 ```
 
-Como podemos observar, un $75%$ de la varianza de los datos originales se podrían explicar usando tan solo las dos primeras componentes principales, lo cual sugiere que estas dos componentes podrían ser suficientes para representar los datos, con una pequeña pérdida de información sobre la variación de los datos, llegando al $85%$ en caso de utilizar tres componentes. 
+Como podemos observar, un $75%$ de la varianza de los datos originales se podrían explicar usando tan solo las dos primeras componentes principales, lo cual sugiere que estas dos componentes podrían ser suficientes para representar los datos, con una pequeña pérdida de información sobre la variación de los datos, llegando al $85%$ en caso de utilizar **tres componentes**. 
 
-
-#### `biplot` con las dos primeras componentes principales
+### `biplot` con las dos primeras componentes principales
 
 Realicemos un **biplot** para ver cómo se expresarían nuestros datos en función de esas dos componentes.
 
@@ -906,7 +914,3 @@ En este biplot podemos observar los puntos que representan a los pacientes en el
 Podemos observar diferentes agrupaciones de puntos, lo que indicaría que estas observaciones tendrían valores similares también en las variables originales.
 
 Además, gracias a las flechas que indican la composición de las componentes principales según las variables originales, podemos observar que, al haber un ángulo pequeño entre ellas, las variables `lcavol`, `lcp` y `svi` están fuertemente correlacionadas, como se corrobora en apartados anteriores. Lo mismo ocurriría con `lbph` y `lweight` aunque en menor medida, al haber un ángulo de separación mayor entre ellas. 
-
-## 9.2 Justificación de la desviación estándar
-
-## 9.3 Componentes principales
