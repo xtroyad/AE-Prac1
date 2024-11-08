@@ -849,3 +849,51 @@ prob.nolcavol <- predict(modelo_logistico.nolcavol, newdata = pred_data, type = 
 ```
 
 Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ con estos valores de los predictores. Podemos observar que la probabilidad es prácticamente la misma que con el modelo anterior.
+
+# 9. PCA-PCR
+
+## 9.1 Biplot y `summary` del modelo
+```{r}
+# Carga de librerías
+library(MASS)
+library(pls)
+library(corrplot)
+library(caret)
+```
+
+Primero, creamos nuestro modelo de componentes principales **PCA**:
+```{r}
+# Creamos el subset para el PCA
+pca.data <- prostate[,c("lcavol", "lweight", "lbph", "lcp")]
+# Añadimos el svi a parte, ya que al ser categorico hay que reconvertirlo a numerico
+pca.data["svi"] <- as.numeric(prostate$svi)
+# Realizamos el PCA
+pca.model <- prcomp(pca.data, scale. = TRUE, center = TRUE)
+```
+
+### `summary` del modelo
+
+```{r}
+summary(pca.model)
+```
+
+Podemos observar en la primera fila del `summary` de nuestro modelo, *Standard deviation*, la cantidad de variabilidad que cada componente principal captura de los datos. Como se puede observar, los valores disminuyen con cada componente, siendo la mayor **PC1** y la menor **PC5**.
+
+Las siguientes filas del `summary` ahondan en esta descripción, proporcionándonos valores porcentuales y acumulativos de la descripción de la varianza explicada por cada componente. +Representemos estos valores gráficamente:
+```{r}
+par(mfrow = c(1, 2))
+plot(pca.pve, xlab = "Principal Component",
+  ylab = "Proportion of Variance Explained", ylim = c(0, 1),
+  type = "b")
+plot(cumsum(pca.pve), xlab = "Principal Component",
+  ylab = "Cumulative Proportion of Variance Explained",
+  ylim = c(0, 1), type = "b")
+```
+
+Como podemos observar, un $75%$ de la varianza de los datos originales se podrían explicar usando tan solo las dos primeras componentes principales, lo cual sugiere que estas dos componentes podrían ser suficientes para representar los datos, con una pequeña pérdida de información sobre la variación de los datos, llegando al $85%$ en caso de utilizar tres componentes. 
+
+
+
+## 9.2 Justificación de la desviación estándar
+
+## 9.3 Componentes principales
