@@ -11,10 +11,11 @@ date: "2024-10-30"
 **Nota: Nos aseguramos de tener el paquete `ElemStatLearn` instalado. Si no: `install.packages(lib_URL)`**
 
 ```{r}
-
 lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStatLearn_2015.6.26.2.tar.gz'
-install.packages(lib_URL)
+# install.packages(lib_URL)
+# install.packages("plotly")
 
+library(plotly)
 library(ElemStatLearn)
 library(dplyr)
 ```
@@ -129,32 +130,63 @@ barplot(table(prostate$age), main = "Distribución de Edad", col = "salmon", wid
 
 En el caso de la edad nos encontramos una distribución que podría recordar a la normal, centrada en los 65 años, encontrándose el grueso de la distribución entre los 61 y 70 años. Cabe añadir que encontramos casos desde los `r min.age` hasta los `r max.age` años.
 
-# 3. Análisis de frecuencias (1 punto)
+# 3. Análisis de frecuencias
 
 ## ¿Qué porcentaje de pacientes con la puntuación de Gleason igual a 7, presenta índice igual svi igual a 0?
 
 ```{r}
 # Filtramos por gleason = 7
 gleason.7 <- subset(prostate, gleason == 7)
-svi.pct0 <- sum(gleason.7$svi == 0) / nrow(gleason.7) * 100
-svi.pct0.r = round(svi.pct0)
-svi.pct0
+gleason.7.props <- prop.table(table(gleason.7$svi))*100
 ```
 
-Por lo tanto, un `r svi.pct0.r`% de los pacientes con índice de Gleason igual a 7 presenta un `svi` de 0.
+Por lo tanto, un `r round(gleason.7.props["0"])`% de los pacientes con índice de Gleason igual a 7 presenta un `svi` de 0. Podemos representar esta distribución mediante un gráfico de sectores:
+
+```{r}
+fig <- plot_ly(
+  labels = names(gleason.7.props),
+  values = as.numeric(gleason.7.props),
+  type="pie",
+  textinfo = "label+percent",
+  hoverinfo = "none",
+  insidetextorientation = "radial",
+  height = 400
+) %>%
+  layout(
+    title = "Distribución del índice de Gleason para pacientes con svi = 0",
+    showlegend = TRUE
+  )
+fig
+```
+
 
 ## ¿Qué porcentaje de pacientes con índice svi igual a 0 tiene la puntuación de Gleason igual a 7?
 
 ```{r}
 # Filtramos por gleason = 7
 svi.0 <- subset(prostate, svi == 0)
-# En el apartado anterior cambiamos svi=0 por la categoría No
-gleason.pct7 <- sum(svi.0$gleason == 7) / nrow(svi.0) * 100
-gleason.pct7.r = round(gleason.pct7)
-gleason.pct7
+svi.0.props <- prop.table(table(svi.0$gleason))*100
 ```
 
-Por lo tanto, un `r gleason.pct7.r`% de los pacientes con un `svi` de 0 presenta un índice de Gleason igual a 7.
+Por lo tanto, un `r round(svi.0.props["7"])`% de los pacientes con un `svi` de 0 presenta un índice de Gleason igual a 7. Podemos visualizar la distribución del índice de Gleason para pacientes con un `svi`$=0$ mediante un gráfico de sectores:
+
+```{r}
+fig <- plot_ly(
+  labels = names(svi.0.props),
+  values = as.numeric(svi.0.props),
+  type="pie",
+  textinfo = "label+percent",
+  hoverinfo = "none",
+  insidetextorientation = "radial" ,
+  height = 400
+) %>%
+  layout(
+    title = "Distribución del índice de Gleason para pacientes con svi = 0",
+    showlegend = TRUE
+  )
+fig
+```
+
 
 ## Estas dos variables, ¿son independientes?
 
@@ -168,7 +200,7 @@ chi_test <- chisq.test(contingencia.svi_gleason)
 chi_test
 ```
 
-Al realizar el test, obtenemos un $p$-valor de 0.0012. Dado que los niveles de significación más comunes son $0.05$ y $0.01$ y nuestro $p$-valor es notablemente menor, podemos afirmar con seguridad que existe una relación entre estas variables.
+Al realizar el test, obtenemos un $p$-valor de 0.0012. Dado que los niveles de significación más comunes son $0.05$ y $0.01$, y nuestro $p$-valor es notablemente menor, podemos afirmar con seguridad que existe una relación entre estas variables.
 
 # 4. Regresión lineal simple.
 
@@ -304,45 +336,46 @@ $$
 
 1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es:
 
-    $$
+  $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
-    $$
+  $$
 
-    $$
+  $$
     ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
-    $$
+  $$
 
 2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial:
 
-    $$
+  $$
     \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
-    $$
+  $$
 
-    $$
+  $$
     \text{PSA} = e^{1.50730 } + e^{(0.71932 \times ln(\text{cavol}))}
-    $$
+  $$
 
-    $$
+  $$
     \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol})})^{0.71932}
-    $$
+  $$
 
 3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo:
 
-    $$
+  $$
     \text{cavol} = e^{ln(\text{cavol})}
-    $$
+  $$
 
     Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 
-    $$
+  $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
-    $$
+  $$
 
 4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como:
 
-    $$
+  $$
     \text{PSA} = C \cdot \text{cavol}^{b}
-    $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
+  $$ 
+    Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
 
 ### Interpretación de la Relación
 
@@ -425,6 +458,247 @@ Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resa
 
 La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
 
+# 6. Modelo de Ridge y Lasso
+
+Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro conjunto de datos lo dividimos entre el conjunto de **training** y el de **testeo**. Para crear nuestro training set utilizaremos el 70% de las entradas de nuestro conjunto de datos. Como en el ejercicio anterior, eliminaremos también las variables categoricas, como el `svi`.
+
+```{r}
+library(glmnet)
+
+# Preparamos un dataset sin las variables que no usamos
+datos_usados <- subset(prostate, select = -c(age, pgg45, gleason, svi))
+
+# Dividimos el dataset entre predictores y el valor a predecir
+X <- as.matrix(datos_usados[, -which(names(datos_usados) == "lpsa")])
+y <- datos_usados$lpsa
+
+# Creamos los conjuntos de train y test, especificando la seed para poder reproducir la ejecución
+# con los mismos sets
+set.seed(123) 
+train_idx <- sample(1:nrow(X), size = 0.7 * nrow(X))
+X.train <- X[train_idx,]
+y.train <- y[train_idx]
+X.test <- X[-train_idx,]
+y.test <- y[-train_idx]
+```
+
+## 6.1 Modelo de Ridge
+
+Para utilizar el modelo de Ridge con `glmnet` debemos poner el parámetro $\alpha = 0$. Utilizaremos un *grid* con 200 valores de $\lambda$ diferentes, desde $10^{4}$ hasta $10^{-4}$. Estos valores se han determinado después de realizar la gráfica varias veces para asegurarnos de que las regiones que en ella se observan tienen una representación similar. A partir del modelo, podemos obtener el conjunto de coeficientes y los lambdas correspondientes a cada uno de los 200 modelos obtenidos.
+
+```{r}
+lambdas = 10^seq(4,-4, length = 200)
+
+ridge.model <- glmnet(X.train, y.train, alpha = 0, lambda = lambdas)
+# Obtenemos los coeficientes y los lambdas
+ridge.coefs <- as.matrix(ridge.model$beta)
+ridge.lambda <- ridge.model$lambda
+
+matplot(log(ridge.lambda), t(ridge.coefs), type = "l", lty = 1, col = rainbow(nrow(ridge.coefs)),
+        xlab = "log(λ)", ylab = "Coeficientes", main = "Ridge: Coeficientes vs log(λ)")
+legend("topright", legend = colnames(X), col = rainbow(nrow(ridge.coefs)), lty = 1, cex = 0.6)
+```
+
+Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx (-\inf,-4)$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. 
+
+Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=0$:
+
+```{r}
+# La seleccion hecha en el CV es tambien aleatoria, asi que debebemos
+# especificar la seed para asegurarnos de que podemos reprocir la prueba
+set.seed(123) 
+# Obtenemos el mejor valor de lambda usando cross-validation
+cv.ridge.model <- cv.glmnet(X.train, y.train, alpha=0, lambda=lambdas)
+lambda.min.ridge <- cv.ridge.model$lambda.min
+log(lambda.min.ridge)
+```
+
+- Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.ridge,4)`$.
+- Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.ridge),4)`$.
+
+A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Ridge.
+
+```{r}
+plot(cv.ridge.model)
+```
+
+Vamos ahora a hacer la predicción de `lpsa` usando el conjunto de testeo.
+
+```{r}
+pred.ridge <- predict(cv.ridge.model, s = lambda.min.ridge, newx = X.test)
+```
+
+## 6.2 Modelo de Lasso
+
+Para utilizar el modelo de Lasso con `glmnet` debemos poner el parámetro $\alpha = 1$. Utilizaremos el mismo *grid* de \lambda usado para el modelo de *Ridge*, pero con valores de $\lambda$ entre $10^1$ y $10^{-4}$, valores que obtenemos de igual manera tras reproducir la gráfica varias veces. Después procedemos de forma similar.
+
+```{r}
+lambdas = 10^seq(1,-4, length = 200)
+lasso.model <- glmnet(X.train, y.train, alpha = 1, lambda = lambdas)
+# Obtenemos los coeficientes y los lambdas
+lasso.coefs <- as.matrix(lasso.model$beta)
+lasso.lambda <- lasso.model$lambda
+
+matplot(log(lasso.lambda), t(lasso.coefs), type = "l", lty = 1, col = rainbow(nrow(lasso.coefs)),
+        xlab = "log(λ)", ylab = "Coeficientes", main = "Lasso: Coeficientes vs log(λ)")
+legend("topright", legend = colnames(X), col = rainbow(nrow(lasso.coefs)), lty = 1, cex = 0.6)
+```
+
+Podemos observar un gráfico similar al obtenido para *Ridge*, con la diferencia de que *Lasso* sí elimina predictores, es decir hace sus coeficientes 0. Contando esta diferencia, vemos también una representación análoga de las 3 regiones que vimos en el gráfico del modelo de *Ridge*, con una primera región donde el coeficiente de `lcp` es negativo, hasta que se elimina, una región intermedia donde se regulan el resto de parámetros, y una final donde se eliminan todos los coeficientes (en *Ridge* también tendían a 0). Es por esto que podemos suponer que, también en este caso, el valor óptimo de $\lambda$ se encontrará en la región intermedia.
+
+También podemos visualizar el `plot` por defecto del modelo de *Lasso*, el cual nos muestra la evolución de los coeficientes con el `L1 Norm`, que representa el error que se intenta minimizar al utilizar este modelo:
+
+$$
+L1_\text{Norm} = RSS + \lambda \sum ^p_{j=1}|\beta_j|
+$$
+
+```{r}
+plot(lasso.model, col = rainbow(nrow(lasso.coefs)))
+legend("topright", legend = colnames(X), col = rainbow(nrow(lasso.coefs),start=0), lty = 1, cex = 0.6)
+```
+
+
+Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=1$:
+
+```{r}
+# La seleccion hecha en el CV es tambien aleatoria, asi que debebemos especificar la 
+# seed para asegurarnos de que podemos reprocir la prueba
+set.seed(123)
+# Obtenemos el mejor valor de lambda usando cross-validation
+cv.lasso.model <- cv.glmnet(X.train, y.train, alpha=1, lambda=lambdas)
+lambda.min.lasso <- cv.lasso.model$lambda.min
+lambda.min.lasso
+```
+
+- Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.lasso,4)`$.
+- Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.lasso),4)`$.
+
+A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Lasso.
+
+```{r}
+plot(cv.lasso.model)
+```
+
+Vamos ahora a hacer la predicción de `lpsa` usando el conjunto de testeo.
+
+```{r}
+pred.lasso <- predict(cv.lasso.model, s = lambda.min.lasso, newx = X.test)
+```
+
+## 6.3 Comparación con modelo lineal múltiple
+
+1. **Coeficientes**: Comparamos los coeficientes obtenidos en cada modelo.
+
+Creamos un `data.frame` que contenga los coeficientes para cada modelo. Esta tabla nos sirve tanto para poder comparar cuantitativamente los valores de cada coeficiente, como para preparar los datos para presentarlos en un gráfico usando `ggplot`.
+```{r}
+coef.multi <- coef(modelo_lpsa)[-1]
+coef.ridge <- coef(cv.ridge.model, s=lambda.min.ridge)[-1]
+coef.lasso <- coef(cv.lasso.model, s=lambda.min.lasso)[-1]
+
+coef.data <- data.frame(
+  variable = names(coef.multi),
+  multiple = as.numeric(coef.multi),
+  ridge = as.numeric(coef.ridge),
+  lasso = as.numeric(coef.lasso)
+)
+
+coef.data
+```
+
+Cambiamos la tabla de datos a formato `wide` para poder mapearlo correctamente usando ggplot
+
+```{r}
+coef.data.long <- reshape2::melt(coef.data, id.vars = "variable", 
+                                 variable.name = "Modelo", value.name = "Coeficiente")
+
+ggplot(coef.data.long, aes(x = variable, y = Coeficiente, fill = Modelo)) +
+  geom_bar(stat = "identity", position = "dodge") + 
+  labs(title = "Comparación de Coeficientes entre Modelos de Regresión",
+    x = "Predictor", y = "Peso del Coeficiente") +
+  theme_minimal()
+```
+
+Lo primero que salta a la vista es que el modelo **Lasso** ha eliminado el predictor `lbph` a diferencia del resto, ya que el modelo **Lasso** es el único que realiza selección de variables. De forma similar, el resto de modelos otorga un peso muy bajo a este predictor.
+
+Algo similar ocurre con el predictor `lcp`, que obtiene pesos bajos aunque mayores que los de `lbph`, y además **Lasso** lo mantiene en su modelo. Vemos una diferencia significante entre el peso que le otorga el modelo de **Ridge**, relativamente mucho mayor al que le otorgan los otros modelos.
+
+La mayor diferencia entre los modelos la vemos en la variable `lcavol`, donde la regresión múltiple le otorga un peso mucho mayor al que le otorgan el resto de los modelos, que también difieren en una proporción menor, siendo el modelo de **Ridge** el que menor importancia le otorga. 
+
+Finalmente, con la variable `lweight` es con la que más consenso hay entre modelos, siendo para todos la variable más importante para el modelo (junto con `lcp` en el caso de la regresión múltiple), siendo el modelo que más peso le da el modelo de **Ridge**.
+
+2. **Rendimiento**: 
+
+Vamos a calcular la predicción del modelo lineal (el resto ya han sido calculados), y a continuación calcularemos y compararemos el **MSE** (*error cuadrático medio*) que resulta de cada modelo.
+
+```{r}
+# Funciones para calcular las métricas
+mse <- function(y,y2) {
+  se = (y-y2)^2
+  mean(se)
+}
+
+rsq <- function(y,y2) {
+  rss = sum((y-y2)^2)
+  tss = sum((mean(y)-y)^2)
+  1 - rss / tss
+}
+
+rsq.adj <- function(y,y2,p) {
+  n = length(y)
+  1 - ((1-rsq(y,y2))*(n-1))/(n-p-1)
+}
+```
+
+
+```{r}
+pred.multiple <- predict(modelo_lpsa, newdata = as.data.frame(X.test))
+
+resultados <- data.frame(
+  Metric = c("MSE", "R2", "R2adj"),
+  Multiple = c(
+    mse(y.test, pred.multiple), 
+    rsq(y.test, pred.multiple), 
+    rsq.adj(y.test, pred.multiple, 4)
+  ),
+  Ridge = c(
+    mse(y.test, pred.ridge), 
+    rsq(y.test, pred.ridge), 
+    rsq.adj(y.test, pred.ridge, 4)
+  ), 
+  Lasso = c(
+    mse(y.test, pred.lasso),
+    rsq(y.test, pred.lasso),
+    rsq.adj(y.test, pred.lasso, 3) # p = 3 aquí ya que, como recordamos, lasso elimina lbph
+  )
+)
+
+resultados
+```
+
+Replicamos lo hecho para los coeficientes para graficar los resultados obtenidos:
+```{r}
+resultados.long <- reshape2::melt(resultados, id.vars = "Metric", variable.name = "Modelo", value.name = "Valor")
+
+ggplot(resultados.long, aes(Metric, Valor, fill = Modelo)) +
+  geom_bar(stat= "identity", position="dodge") +
+  labs(title = "Comparación de Métricas de Rendimiento entre Modelos",
+    x = "Métrica", y = "Valor de la Métrica") +
+  theme_minimal()
+```
+
+## 6.4 Conclusiones
+
+Como podemos observar, el modelo que mejor ha funcionado en nuestro caso es el de la regresión múltiple, teniendo un resultado mejor que el de los otros modelos tras medir su rendimiento usando **MSE**, $R^2$ y $R^2_\text{adj}$ en el conjunto de testeo.
+
+Así, podemos concluir que los modelos que penalizan un número mayor de predictores, en este caso, funciona peor que el modelo de regresión múltiple que no cuenta con esa penalización. Además, tampoco representan una mejora en el rendimiento o en el espacio de almacenamiento, dado que contamos con un número muy limitado de predictores y de observaciones, por lo que no se recomendaría su uso en situaciones similares.
+
+Para responder a si los modelos lineales podrían ser utilizados o no, revisamos los valores de las métricas obtenidas para el modelo de regresión múltiple:
+
+- $R^2 = `r resultados$Multiple[2]`$
+- $R^2_\text{adj} = `r resultados$Multiple[3]`$
+
+Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría ser utilizado para realizar predicciones.
+
 7. LDA
 
 ```{r}
@@ -432,4 +706,157 @@ library(MASS)
 lda_model <- lda(svi ~ lcavol + lcp + lpsa, data = prostate)
 print(lda_model)
 ```
+
+
+
+# 8. Regresión Logística
+
+## 8.1 `svi` en función de `lcavol`, `lcp` y `lpsa`
+
+Veamos primero las distribuciones del  `svi` frente a los predictores propuestos:
+
+```{r}
+boxplot1 <- plot_ly(data = prostate, x = ~factor(svi), y = ~lcavol, 
+                    type = "box", name="lcavol", width = 900) %>%
+  layout(xaxis = list(title = "svi"), yaxis = list(title = "lcavol"))
+
+boxplot2 <- plot_ly(data = prostate, x = ~factor(svi), y = ~lcp, 
+                    type = "box", name="lcp", width = 900) %>%
+  layout(xaxis = list(title = "svi"), yaxis = list(title = "lcp"))
+
+boxplot3 <- plot_ly(data = prostate, x = ~factor(svi), y = ~lpsa, 
+                    type = "box", name="lpsa", width = 900) %>%
+  layout(xaxis = list(title = "svi"), yaxis = list(title = "lpsa"))
+
+fig <- subplot(boxplot1, boxplot2, boxplot3, nrows = 1, titleX = TRUE, titleY = TRUE) %>%
+  layout(title="Distribución de los predictores según svi")
+fig
+```
+
+Como podemos observar, la distribución de `svi` respecto al resto de variables es muy diferenciable. A simple vista podemos ver una clara relación entre valores negativos del `svi` con los tres predictores propuestos.
+
+Vamos ahora a calcular el modelo. Dado que la variable `svi` es binaria (1 o 0), especificamos el parámetro `family=binomial`:
+```{r}
+# Nos aseguramos de que la variable svi esté en formato factor, por si se ha cambiado en algun apartado anterior
+prostate$svi <- as.factor(prostate$svi)
+
+modelo_logistico <- glm(svi ~ lcavol + lcp + lpsa, data = prostate, family = binomial)
+# Creamos una lista con los coeficientes preparados para el display
+coefs = sapply(modelo_logistico$coefficients, function(x) round(x,2))
+```
+
+El modelo resulta en la siguiente función:
+$$
+\text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcavol} + `r coefs[3]` \cdot \text{lcp}+ `r coefs[4]` \cdot \text{lpsa}
+$$
+
+## 8.2 Conclusiones sobre el modelo
+
+Veamos el `summary` del modelo:
+
+```{r}
+summary(modelo_logistico)
+```
+
+Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Además, recordemos del **apartado 5** que `lcavol` guardaba una alta correlación con las otras variables, `lcp` y `lpsa`. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo. 
+
+Vamos a realizar una predicción de nuestro set original usando el modelo:
+```{r}
+threshold = 0.5
+log.probs = predict(modelo_logistico, type = "response")
+log.preds = rep(0, length(log.probs))
+log.preds[log.probs > threshold] = 1
+```
+
+Veamos la tabla de valores originales:
+```{r}
+table(log.preds)
+```
+
+Y a continuación la tabla de valores obtenidos:
+```{r}
+table(prostate$svi)
+```
+
+Como se puede observar, el modelo solo falló en 3 ocasiones, dando un $0$ cuando debería ser $1$, lo cual indica que el modelo hizo un buen trabajo al predecir el conjunto de entrenamiento, con un `r round((79+18-3)/(79+18)*100)`% de precisión. Es importante hacer notar que el dataset está cargado hacia `svi = 0`, es decir, hay muchas más observaciones en las que `svi = 1`, lo cual en general no es bueno para la generación de modelos, y en particular puede ser que haya influenciado a esta tendencia al 0 que muestra nuestro modelo. 
+
+De cualquier forma, en esta ocasión no hemos dividido el dataset en *training* y *testing*, por lo que estamos examinando el rendimiento de nuestro modelo en el mismo conjunto de datos con el que lo hemos entrenado. En este caso habría que tener en cuenta dos cosas:
+
+1. La precisión del modelo no es representativa ya que, como decimos, no estamos utilizando un conjunto de testeo.
+2. Al analizar la precisión y obtener un resultado tan bueno, deberíamos tener cuidado con el **overfitting**.
+
+Por estos motivos, se concluye que, a priori, no se puede decir que sea un buen modelo sin realizar primero pruebas de su rendimiento con un set de testeo, además de que mejoraría en gran medida si se entrenara con un set más equilibrado.
+
+### Modelo alternativo
+
+Vistos los resultados obtenidos con el modelo anterior, nos preguntamos si podríamos mejorarlo más. Y es que, como explicamos, el predictor `lcavol` tiene una baja significancia, esto junto con la alta correlación con el resto de predictores del modelo nos lleva a pensar que podemos mejorar el modelo al eliminar este predictor.
+
+Vamos a proceder de forma similar al modelo original:
+```{r}
+modelo_logistico.nolcavol <- glm(svi ~ lcp + lpsa, data = prostate, family = binomial)
+# Creamos una lista con los coeficientes preparados para el display
+coefs = sapply(modelo_logistico.nolcavol$coefficients, function(x) round(x,2))
+summary(modelo_logistico.nolcavol)
+```
+
+El modelo resulta en la siguiente función:
+$$
+\text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcp}+ `r coefs[3]` \cdot \text{lpsa}
+$$
+
+Además, los $p-$values nos muestran que todas las variables utilizadas, `lcp` y `lpsa` en este caso, son significantes. Vamos a comparar los resultados obtenidos 
+
+Vamos a realizar una predicción de nuestro set original usando el modelo:
+```{r}
+threshold = 0.5
+log.probs = predict(modelo_logistico.nolcavol, type = "response")
+log.preds = rep(0, length(log.probs))
+log.preds[log.probs > threshold] = 1
+```
+
+Veamos la tabla de valores originales:
+```{r}
+table(log.preds)
+```
+
+Y a continuación la tabla de valores obtenidos:
+```{r}
+table(prostate$svi)
+```
+
+Observamos como hemos conseguido predecir un valor más utilizando este modelo, que se desprende de la variable `lcavol`, llegando así al `r round((79+18-2)/(79+18)*100)`% de precisión. Sin embargo, como también mencionamos con el modelo anterior, debemos ser críticos con este modelo y prestar especialmente atención al posible **overfitting** y al desbalance del conjunto de datos.
+
+## 8.3 Predicción con el modelo
+
+Vamos a utilizar nuestro modelo para predecir un valor de `svi` para valores concretos de los predictores `lcavol`, `lcp` y `lpsa`. Utilizamos los siguientes valores:
+
+- `lcavol` = 2.8269,
+- `lcp` = 1.843,
+- `lpsa` = 3.285
+
+Primero creamos el `data.frame` que contenga estos datos:
+```{r}
+pred_data = data.frame(
+  lcavol = 2.8269,
+  lcp = 1.843,
+  lpsa = 3.285
+)
+```
+
+Realizamos la predicción usando nuestro modelo:
+```{r}
+prob <- predict(modelo_logistico, newdata = pred_data, type = "response")
+```
+
+Obtenemos una probabilidad del `r round(prob*100,1)`% de que `svi`$=1$ con estos valores de los predictores. 
+
+### Predicción usando el modelo alternativo
+
+Vamos a realizar la misma predicción, pero esta vez utilizando el modelo propuesto en el subapartado anterior, que se desprendía del predictor `lcavol` por su baja significancia estadística. Dado que los datos ya están preparados, podemos calcular la probabilidad con un solo comando (se ignora el valor de `lcavol` al realizar la predicción):
+
+```{r}
+prob.nolcavol <- predict(modelo_logistico.nolcavol, newdata = pred_data, type = "response")
+```
+
+Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ con estos valores de los predictores. Podemos observar que la probabilidad es prácticamente la misma que con el modelo anterior.
 
