@@ -424,3 +424,12 @@ El RSE es 0.7405, lo que indica el tamaño promedio de los errores en las predic
 Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
 
 La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
+
+7. LDA
+
+```{r}
+library(MASS)
+lda_model <- lda(svi ~ lcavol + lcp + lpsa, data = prostate)
+print(lda_model)
+```
+
