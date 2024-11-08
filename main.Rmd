@@ -893,6 +893,19 @@ plot(cumsum(pca.pve), xlab = "Principal Component",
 Como podemos observar, un $75%$ de la varianza de los datos originales se podrían explicar usando tan solo las dos primeras componentes principales, lo cual sugiere que estas dos componentes podrían ser suficientes para representar los datos, con una pequeña pérdida de información sobre la variación de los datos, llegando al $85%$ en caso de utilizar tres componentes. 
 
 
+#### `biplot` con las dos primeras componentes principales
+
+Realicemos un **biplot** para ver cómo se expresarían nuestros datos en función de esas dos componentes.
+
+```{r}
+biplot(pca.model, scale = 0)
+```
+
+En este biplot podemos observar los puntos que representan a los pacientes en el espacio definido por las dos primeras componentes principales (`PC1` y `PC2`). 
+
+Podemos observar diferentes agrupaciones de puntos, lo que indicaría que estas observaciones tendrían valores similares también en las variables originales.
+
+Además, gracias a las flechas que indican la composición de las componentes principales según las variables originales, podemos observar que, al haber un ángulo pequeño entre ellas, las variables `lcavol`, `lcp` y `svi` están fuertemente correlacionadas, como se corrobora en apartados anteriores. Lo mismo ocurriría con `lbph` y `lweight` aunque en menor medida, al haber un ángulo de separación mayor entre ellas. 
 
 ## 9.2 Justificación de la desviación estándar
 
