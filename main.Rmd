@@ -18,6 +18,7 @@ lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStat
 library(plotly)
 library(ElemStatLearn)
 library(dplyr)
+library(MASS)
 ```
 
 Utilizamos `head()` para ver las primeras filas y hacernos una idea de las variables disponibles
@@ -855,7 +856,6 @@ Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ 
 ## 9.1 Biplot y `summary` del modelo
 ```{r}
 # Carga de librerías
-library(MASS)
 ```
 
 Primero, creamos nuestro modelo de componentes principales **PCA**:
