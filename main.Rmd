@@ -1042,7 +1042,7 @@ library(caret)
 
 
 ## Análisis exploratorio de datos y correlación
-
+Iniciamos echando una pequeña vista a la correlación existente entre los datos. Se ha eliminado la diagonal para mejorar la visualización.
 ```{r}
 df <- prostate
 df$svi <- as.numeric(df$svi)
@@ -1053,6 +1053,8 @@ corrplot(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]),
          diag = FALSE,
          addCoef.col = "black") 
 ```
+
+Si hubiéramos usado la función `findCorrelation`, no se vería ninguna hasta modificar el valor por defecto de `cutoff = 0.95`. 
 ```{r}
 # Identificación variables con alta correlación
 findCorrelation(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]), 
@@ -1060,26 +1062,42 @@ findCorrelation(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]),
                 cutoff = 0.44)
 ```
 ## Ajuste de la Regresión con Componentes Principales (PCR)
-Para abordar la colinealidad, ajusto un modelo de PCR y uso validación cruzada para evaluar el error de predicción:
+```{r}
+suppressPackageStartupMessages({
+  library(pls)
+})
+```
+
+Para abordar la colinealidad, se ajusta un modelo de PCR y uso validación cruzada para evaluar el error de predicción. 
+
+Se incluye `scale = TRUE` para normalizar los predictores y `validation = "CV"` para usar validación cruzada en la evaluación:
 
 ```{r}
-library(pls)
-
 set.seed(42)
-pcr.fit <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = df, scale = TRUE, validation = "CV")
-summary(pcr.fit)
+pcr.fit = pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, 
+              data = df, 
+              scale = TRUE, 
+              validation = "CV")
 ```
-Se incluye `scale = TRUE` para normalizar los predictores y `validation = "CV"` para usar validación cruzada en la evaluación.
+
 
 ## Visualización del MSE y selección de componentes principales
 
-Para decidir el número óptimo de componentes principales, visualizo el MSE con el siguiente gráfico:
+Para decidir el número óptimo de componentes principales, se traza las puntuaciones de la validación cruzada utilizando `validationplot()`. Visualmente ya se ve que  el menor error de validación cruzada es con M = 5. 
+
+Además se ve que el aumento de componentes favorece en los resultados. Haciendo uso completo de los pedidos en el enunciado. Aunque de forma relativa el uso de 1 a 4 componentes podría ser equivalente si quisiéramos usar menos.
 
 ```{r}
 validationplot(pcr.fit, val.type = "MSEP")
 ```
-Visualmente ya ve ve que  el menor error de validación cruzada más pequeño es con M = 5.
 
+Fijándonos en el `summary()` podemos ver mismamente que en `M = 5` se captura el 100% de la varianza en los predictores.
+
+```{r}
+summary(pcr.fit)
+```
+
+O a través de la función `which.min()` vemos el error más pequeño:
 ```{r}
 which.min( MSEP( pcr.fit )$val[1,1, ] ) - 1
 ```
@@ -1087,21 +1105,37 @@ which.min( MSEP( pcr.fit )$val[1,1, ] ) - 1
 
 Se dividen los datos en conjuntos de entrenamiento y prueba para evaluar el rendimiento del modelo:
 ```{r}
-# Creo los conjuntos de entrenamiento y prueba
+# Se crea los conjuntos de entrenamiento y prueba
 set.seed(1)
 train_index <- sample(1:nrow(df), nrow(df) * 0.7)
 train_data <- df[train_index, ]
 test_data <- df[-train_index, ]
 
-# Ajusto el modelo con los datos de entrenamiento
-pcr.fit.train <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi,, data = train_data, scale = TRUE, validation = "CV")
+# Se ajusta el modelo con los datos de entrenamiento
+pcr.fit.train <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi,, 
+                     data = train_data,
+                     scale = TRUE, 
+                     validation = "CV")
+
 summary(pcr.fit.train)
 ```
+```{r}
+validationplot(pcr.fit.train, val.type = "MSEP")
+```
+
+Usemos `which.min()` para tenerlo más claro...:
+```{r}
+which.min( MSEP( pcr.fit.train )$val[1,1, ] ) - 1
+```
+Vemos que en este caso el mejor `M` es 2 para este conjunto de entrenamiento, y no tendriamos que tener en cuenta todas la variables.
+
 ##  Evaluación del modelo en el conjunto de prueba
 Se predicen los valores de `lpsa` en el conjunto de prueba y calculo el `MSE` para medir la precisión del modelo:
 ```{r}
-ncomp_opt <- 5  # Ajusto este número basado en el gráfico de MSEP
-pcr.pred <- predict(pcr.fit.train, test_data, ncomp = ncomp_opt)
+ncomp_opt <- 5
+pcr.pred <- predict(pcr.fit.train, 
+                    test_data, 
+                    ncomp = ncomp_opt)
 
 # Calculo el MSE
 mse <- mean((pcr.pred - test_data$lpsa)^2)
@@ -1111,6 +1145,8 @@ print(mse)
 
 ## Ajuste del modelo final
 ```{r}
-pcr.final <- pcr(lpsa ~ ., data = df, scale = TRUE, ncomp = ncomp_opt)
+pcr.final <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = df, 
+                 scale = TRUE, 
+                 ncomp = 5)
 summary(pcr.final)
 ```
