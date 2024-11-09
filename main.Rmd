@@ -3,6 +3,18 @@ title: "Práctica de Aprendizaje Estadístico - Parte 1"
 author: " "
 date: "2024-10-30"
 ---
+```{r}
+options(warn = -1)
+suppressPackageStartupMessages({
+  library(plotly)
+  library(dplyr)
+  library(glmnet)
+  library(corrplot)
+  library(caret)
+})
+
+```
+
 
 # 0. Carga los datos y elimina la variable TRAIN.
 
@@ -36,7 +48,6 @@ La columna `train` se utiliza en estudios previos para indicar las filas de entr
 Dado que esta práctica no la requiere, eliminamos esta columna para simplificar el conjunto de datos.
 
 ```{r}
-
 prostate = prostate %>% select(-train)
 head(prostate)
 ```
@@ -334,47 +345,46 @@ $$
 
 1.  **Modelo Original**: La ecuación del modelo de regresión lineal que obtuvimos es:
 
-$$
+  $$
     \text{lpsa} = 1.50730 + 0.71932 \times \text{lcavol}
   $$
 
-$$
+  $$
     ln(\text{psa}) = 1.50730 + 0.71932 \times ln(\text{cavol})
   $$
 
 2.  **Despejar PSA**: Como $\text{lpsa}$ es el logaritmo natural del PSA, puedes deshacerte del logaritmo aplicando la función exponencial:
 
-$$
+  $$
     \text{PSA} = e^{ln(\text{psa})} = e^{(1.50730 + 0.71932 \times ln(\text{cavol}))}
   $$
 
-$$
+  $$
     \text{PSA} = e^{1.50730 } + e^{(0.71932 \times ln(\text{cavol}))}
   $$
 
-$$
+  $$
     \text{PSA} = e^{1.50730 } + (e^{ln(\text{cavol})})^{0.71932}
   $$
 
 3.  **Transformación a `cavol`**: Para expresar esto en términos de `cavol` (el volumen de cáncer en su forma original), tienes que revertir el logaritmo:
 
-$$
+  $$
     \text{cavol} = e^{ln(\text{cavol})}
   $$
 
-```         
 Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
-```
 
-$$
+  $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
   $$
 
 4.  **Relación Final**: La relación entre `PSA` y `cavol` queda como:
 
-$$
+  $$
     \text{PSA} = C \cdot \text{cavol}^{b}
-  $$ Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
+  $$ 
+    Donde $C = e^{1.50730}$ y $b = 0.71932$. Esto significa que `PSA` es proporcional a `cavol` elevado a un exponente.
 
 ### Interpretación de la Relación
 
@@ -498,7 +508,7 @@ matplot(log(ridge.lambda), t(ridge.coefs), type = "l", lty = 1, col = rainbow(nr
 legend("topright", legend = colnames(X), col = rainbow(nrow(ridge.coefs)), lty = 1, cex = 0.6)
 ```
 
-Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx (-\inf,-4)$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0.
+Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx (-\inf,-4)$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. 
 
 Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=0$:
 
@@ -512,8 +522,8 @@ lambda.min.ridge <- cv.ridge.model$lambda.min
 log(lambda.min.ridge)
 ```
 
--   Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.ridge,4)`$.
--   Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.ridge),4)`$.
+- Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.ridge,4)`$.
+- Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.ridge),4)`$.
 
 A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Ridge.
 
@@ -568,8 +578,8 @@ lambda.min.lasso <- cv.lasso.model$lambda.min
 lambda.min.lasso
 ```
 
--   Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.lasso,4)`$.
--   Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.lasso),4)`$.
+- Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.lasso,4)`$.
+- Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.lasso),4)`$.
 
 A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Lasso.
 
@@ -585,10 +595,9 @@ pred.lasso <- predict(cv.lasso.model, s = lambda.min.lasso, newx = X.test)
 
 ## 6.3 Comparación con modelo lineal múltiple
 
-1.  **Coeficientes**: Comparamos los coeficientes obtenidos en cada modelo.
+1. **Coeficientes**: Comparamos los coeficientes obtenidos en cada modelo.
 
 Creamos un `data.frame` que contenga los coeficientes para cada modelo. Esta tabla nos sirve tanto para poder comparar cuantitativamente los valores de cada coeficiente, como para preparar los datos para presentarlos en un gráfico usando `ggplot`.
-
 ```{r}
 coef.multi <- coef(modelo_lpsa)[-1]
 coef.ridge <- coef(cv.ridge.model, s=lambda.min.ridge)[-1]
@@ -621,11 +630,11 @@ Lo primero que salta a la vista es que el modelo **Lasso** ha eliminado el predi
 
 Algo similar ocurre con el predictor `lcp`, que obtiene pesos bajos aunque mayores que los de `lbph`, y además **Lasso** lo mantiene en su modelo. Vemos una diferencia significante entre el peso que le otorga el modelo de **Ridge**, relativamente mucho mayor al que le otorgan los otros modelos.
 
-La mayor diferencia entre los modelos la vemos en la variable `lcavol`, donde la regresión múltiple le otorga un peso mucho mayor al que le otorgan el resto de los modelos, que también difieren en una proporción menor, siendo el modelo de **Ridge** el que menor importancia le otorga.
+La mayor diferencia entre los modelos la vemos en la variable `lcavol`, donde la regresión múltiple le otorga un peso mucho mayor al que le otorgan el resto de los modelos, que también difieren en una proporción menor, siendo el modelo de **Ridge** el que menor importancia le otorga. 
 
 Finalmente, con la variable `lweight` es con la que más consenso hay entre modelos, siendo para todos la variable más importante para el modelo (junto con `lcp` en el caso de la regresión múltiple), siendo el modelo que más peso le da el modelo de **Ridge**.
 
-2.  **Rendimiento**:
+2. **Rendimiento**: 
 
 Vamos a calcular la predicción del modelo lineal (el resto ya han sido calculados), y a continuación calcularemos y compararemos el **MSE** (*error cuadrático medio*) que resulta de cada modelo.
 
@@ -674,7 +683,6 @@ resultados
 ```
 
 Replicamos lo hecho para los coeficientes para graficar los resultados obtenidos:
-
 ```{r}
 resultados.long <- reshape2::melt(resultados, id.vars = "Metric", variable.name = "Modelo", value.name = "Valor")
 
@@ -687,14 +695,15 @@ ggplot(resultados.long, aes(Metric, Valor, fill = Modelo)) +
 
 ## 6.4 Conclusiones
 
+
 Como podemos observar, el modelo que mejor ha funcionado en nuestro caso es el de la regresión múltiple, teniendo un resultado mejor que el de los otros modelos tras medir su rendimiento usando **MSE**, $R^2$ y $R^2_\text{adj}$ en el conjunto de testeo.
 
 Así, podemos concluir que los modelos que penalizan un número mayor de predictores, en este caso, funciona peor que el modelo de regresión múltiple que no cuenta con esa penalización. Además, tampoco representan una mejora en el rendimiento o en el espacio de almacenamiento, dado que contamos con un número muy limitado de predictores y de observaciones, por lo que no se recomendaría su uso en situaciones similares.
 
 Para responder a si los modelos lineales podrían ser utilizados o no, revisamos los valores de las métricas obtenidas para el modelo de regresión múltiple:
 
--   $R^2 = `r resultados$Multiple[2]\`\$
--   $R^2_\text{adj} = `r resultados$Multiple[3]\`\$
+- $R^2 = `r resultados$Multiple[2]`$
+- $R^2_\text{adj} = `r resultados$Multiple[3]`$
 
 Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría ser utilizado para realizar predicciones.
 
@@ -814,7 +823,7 @@ Aunque el modelo no es completamente ineficaz, su capacidad para identificar el 
 
 ## 8.1 `svi` en función de `lcavol`, `lcp` y `lpsa`
 
-Veamos primero las distribuciones del `svi` frente a los predictores propuestos:
+Veamos primero las distribuciones del  `svi` frente a los predictores propuestos:
 
 ```{r}
 boxplot1 <- plot_ly(data = prostate, x = ~factor(svi), y = ~lcavol, 
@@ -837,7 +846,6 @@ fig
 Como podemos observar, la distribución de `svi` respecto al resto de variables es muy diferenciable. A simple vista podemos ver una clara relación entre valores negativos del `svi` con los tres predictores propuestos.
 
 Vamos ahora a calcular el modelo. Dado que la variable `svi` es binaria (1 o 0), especificamos el parámetro `family=binomial`:
-
 ```{r}
 # Nos aseguramos de que la variable svi esté en formato factor, por si se ha cambiado en algun apartado anterior
 prostate$svi <- as.factor(prostate$svi)
@@ -861,10 +869,9 @@ Veamos el `summary` del modelo:
 summary(modelo_logistico)
 ```
 
-Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Además, recordemos del **apartado 5** que `lcavol` guardaba una alta correlación con las otras variables, `lcp` y `lpsa`. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo.
+Lo primero que salta a la vista es que el error estimado para la variable `lcavol` es unas 6 veces mayor que el coeficiente en sí, lo cual nos indica que podría ser que la significancia de este predictor sea baja. Además, recordemos del **apartado 5** que `lcavol` guardaba una alta correlación con las otras variables, `lcp` y `lpsa`. Esto se nos confirma al observar el $p-$valor de esta variable, de aproximadamente $0.87$, lo cual nos indica que este predictor no es estadísticamente significativo. 
 
 Vamos a realizar una predicción de nuestro set original usando el modelo:
-
 ```{r}
 threshold = 0.5
 log.probs = predict(modelo_logistico, type = "response")
@@ -873,23 +880,21 @@ log.preds[log.probs > threshold] = 1
 ```
 
 Veamos la tabla de valores originales:
-
 ```{r}
 table(log.preds)
 ```
 
 Y a continuación la tabla de valores obtenidos:
-
 ```{r}
 table(prostate$svi)
 ```
 
-Como se puede observar, el modelo solo falló en 3 ocasiones, dando un $0$ cuando debería ser $1$, lo cual indica que el modelo hizo un buen trabajo al predecir el conjunto de entrenamiento, con un `r round((79+18-3)/(79+18)*100)`% de precisión. Es importante hacer notar que el dataset está cargado hacia `svi = 0`, es decir, hay muchas más observaciones en las que `svi = 1`, lo cual en general no es bueno para la generación de modelos, y en particular puede ser que haya influenciado a esta tendencia al 0 que muestra nuestro modelo.
+Como se puede observar, el modelo solo falló en 3 ocasiones, dando un $0$ cuando debería ser $1$, lo cual indica que el modelo hizo un buen trabajo al predecir el conjunto de entrenamiento, con un `r round((79+18-3)/(79+18)*100)`% de precisión. Es importante hacer notar que el dataset está cargado hacia `svi = 0`, es decir, hay muchas más observaciones en las que `svi = 1`, lo cual en general no es bueno para la generación de modelos, y en particular puede ser que haya influenciado a esta tendencia al 0 que muestra nuestro modelo. 
 
 De cualquier forma, en esta ocasión no hemos dividido el dataset en *training* y *testing*, por lo que estamos examinando el rendimiento de nuestro modelo en el mismo conjunto de datos con el que lo hemos entrenado. En este caso habría que tener en cuenta dos cosas:
 
-1.  La precisión del modelo no es representativa ya que, como decimos, no estamos utilizando un conjunto de testeo.
-2.  Al analizar la precisión y obtener un resultado tan bueno, deberíamos tener cuidado con el **overfitting**.
+1. La precisión del modelo no es representativa ya que, como decimos, no estamos utilizando un conjunto de testeo.
+2. Al analizar la precisión y obtener un resultado tan bueno, deberíamos tener cuidado con el **overfitting**.
 
 Por estos motivos, se concluye que, a priori, no se puede decir que sea un buen modelo sin realizar primero pruebas de su rendimiento con un set de testeo, además de que mejoraría en gran medida si se entrenara con un set más equilibrado.
 
@@ -898,7 +903,6 @@ Por estos motivos, se concluye que, a priori, no se puede decir que sea un buen 
 Vistos los resultados obtenidos con el modelo anterior, nos preguntamos si podríamos mejorarlo más. Y es que, como explicamos, el predictor `lcavol` tiene una baja significancia, esto junto con la alta correlación con el resto de predictores del modelo nos lleva a pensar que podemos mejorar el modelo al eliminar este predictor.
 
 Vamos a proceder de forma similar al modelo original:
-
 ```{r}
 modelo_logistico.nolcavol <- glm(svi ~ lcp + lpsa, data = prostate, family = binomial)
 # Creamos una lista con los coeficientes preparados para el display
@@ -906,14 +910,14 @@ coefs = sapply(modelo_logistico.nolcavol$coefficients, function(x) round(x,2))
 summary(modelo_logistico.nolcavol)
 ```
 
-El modelo resulta en la siguiente función: $$
+El modelo resulta en la siguiente función:
+$$
 \text{svi} = `r coefs[1]` + `r coefs[2]` \cdot \text{lcp}+ `r coefs[3]` \cdot \text{lpsa}
 $$
 
-Además, los $p-$values nos muestran que todas las variables utilizadas, `lcp` y `lpsa` en este caso, son significantes. Vamos a comparar los resultados obtenidos
+Además, los $p-$values nos muestran que todas las variables utilizadas, `lcp` y `lpsa` en este caso, son significantes. Vamos a comparar los resultados obtenidos 
 
 Vamos a realizar una predicción de nuestro set original usando el modelo:
-
 ```{r}
 threshold = 0.5
 log.probs = predict(modelo_logistico.nolcavol, type = "response")
@@ -922,13 +926,11 @@ log.preds[log.probs > threshold] = 1
 ```
 
 Veamos la tabla de valores originales:
-
 ```{r}
 table(log.preds)
 ```
 
 Y a continuación la tabla de valores obtenidos:
-
 ```{r}
 table(prostate$svi)
 ```
@@ -939,12 +941,11 @@ Observamos como hemos conseguido predecir un valor más utilizando este modelo, 
 
 Vamos a utilizar nuestro modelo para predecir un valor de `svi` para valores concretos de los predictores `lcavol`, `lcp` y `lpsa`. Utilizamos los siguientes valores:
 
--   `lcavol` = 2.8269,
--   `lcp` = 1.843,
--   `lpsa` = 3.285
+- `lcavol` = 2.8269,
+- `lcp` = 1.843,
+- `lpsa` = 3.285
 
 Primero creamos el `data.frame` que contenga estos datos:
-
 ```{r}
 pred_data = data.frame(
   lcavol = 2.8269,
@@ -954,12 +955,11 @@ pred_data = data.frame(
 ```
 
 Realizamos la predicción usando nuestro modelo:
-
 ```{r}
 prob <- predict(modelo_logistico, newdata = pred_data, type = "response")
 ```
 
-Obtenemos una probabilidad del `r round(prob*100,1)`% de que `svi`$=1$ con estos valores de los predictores.
+Obtenemos una probabilidad del `r round(prob*100,1)`% de que `svi`$=1$ con estos valores de los predictores. 
 
 ### Predicción usando el modelo alternativo
 
@@ -975,12 +975,7 @@ Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ 
 
 ## 9.1 Biplot y `summary` del modelo
 
-```{r}
-# Carga de librerías
-```
-
 Primero, creamos nuestro modelo de componentes principales **PCA**:
-
 ```{r}
 # Creamos el subset para el PCA
 pca.data <- prostate[,c("lcavol", "lweight", "lbph", "lcp")]
@@ -1011,7 +1006,6 @@ Por tanto, se puede decir que la mayor desviación estándar de esta primera com
 ### Componentes principales
 
 Las siguientes filas del `summary` ahondan en esta descripción, proporcionándonos valores porcentuales y acumulativos de la descripción de la varianza explicada por cada componente. Representemos estos valores gráficamente:
-
 ```{r}
 par(mfrow = c(1, 2))
 plot(pca.pve, xlab = "Principal Component",
@@ -1022,7 +1016,7 @@ plot(cumsum(pca.pve), xlab = "Principal Component",
   ylim = c(0, 1), type = "b")
 ```
 
-Como podemos observar, un $75%$ de la varianza de los datos originales se podrían explicar usando tan solo las dos primeras componentes principales, lo cual sugiere que estas dos componentes podrían ser suficientes para representar los datos, con una pequeña pérdida de información sobre la variación de los datos, llegando al $85%$ en caso de utilizar **tres componentes**.
+Como podemos observar, un $75%$ de la varianza de los datos originales se podrían explicar usando tan solo las dos primeras componentes principales, lo cual sugiere que estas dos componentes podrían ser suficientes para representar los datos, con una pequeña pérdida de información sobre la variación de los datos, llegando al $85%$ en caso de utilizar **tres componentes**. 
 
 ### `biplot` con las dos primeras componentes principales
 
@@ -1032,28 +1026,27 @@ Realicemos un **biplot** para ver cómo se expresarían nuestros datos en funci�
 biplot(pca.model, scale = 0)
 ```
 
-En este biplot podemos observar los puntos que representan a los pacientes en el espacio definido por las dos primeras componentes principales (`PC1` y `PC2`).
+En este biplot podemos observar los puntos que representan a los pacientes en el espacio definido por las dos primeras componentes principales (`PC1` y `PC2`). 
 
 Podemos observar diferentes agrupaciones de puntos, lo que indicaría que estas observaciones tendrían valores similares también en las variables originales.
 
-Además, gracias a las flechas que indican la composición de las componentes principales según las variables originales, podemos observar que, al haber un ángulo pequeño entre ellas, las variables `lcavol`, `lcp` y `svi` están fuertemente correlacionadas, como se corrobora en apartados anteriores. Lo mismo ocurriría con `lbph` y `lweight` aunque en menor medida, al haber un ángulo de separación mayor entre ellas.
+Además, gracias a las flechas que indican la composición de las componentes principales según las variables originales, podemos observar que, al haber un ángulo pequeño entre ellas, las variables `lcavol`, `lcp` y `svi` están fuertemente correlacionadas, como se corrobora en apartados anteriores. Lo mismo ocurriría con `lbph` y `lweight` aunque en menor medida, al haber un ángulo de separación mayor entre ellas. 
 
 # 9.2 PCR
 
 Iniciamos con una carga de las librerias necesarias
 
 ```{r}
-library(ElemStatLearn)
-library(pls)
 library(caret)
 ```
+
 
 ## Análisis exploratorio de datos y correlación
 
 ```{r}
 df <- prostate
 df$svi <- as.numeric(df$svi)
-# Calculo la matriz de correlación de las columnas numéricas y la visualizo
+
 corrplot(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]), 
          type = "upper", 
          tl.cex = 0.7, 
@@ -1070,6 +1063,8 @@ findCorrelation(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]),
 Para abordar la colinealidad, ajusto un modelo de PCR y uso validación cruzada para evaluar el error de predicción:
 
 ```{r}
+library(pls)
+
 set.seed(42)
 pcr.fit <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = df, scale = TRUE, validation = "CV")
 summary(pcr.fit)
@@ -1088,7 +1083,6 @@ Visualmente ya ve ve que  el menor error de validación cruzada más pequeño es
 ```{r}
 which.min( MSEP( pcr.fit )$val[1,1, ] ) - 1
 ```
-
 ## División en conjuntos de entrenamiento y prueba
 
 Se dividen los datos en conjuntos de entrenamiento y prueba para evaluar el rendimiento del modelo:
@@ -1120,4 +1114,3 @@ print(mse)
 pcr.final <- pcr(lpsa ~ ., data = df, scale = TRUE, ncomp = ncomp_opt)
 summary(pcr.final)
 ```
-
