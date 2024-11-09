@@ -3,6 +3,18 @@ title: "Práctica de Aprendizaje Estadístico - Parte 1"
 author: " "
 date: "2024-10-30"
 ---
+```{r}
+options(warn = -1)
+suppressPackageStartupMessages({
+  library(plotly)
+  library(dplyr)
+  library(glmnet)
+  library(corrplot)
+  library(caret)
+})
+
+```
+
 
 # 0. Carga los datos y elimina la variable TRAIN.
 
@@ -18,7 +30,6 @@ lib_URL = 'https://cran.r-project.org/src/contrib/Archive/ElemStatLearn/ElemStat
 library(plotly)
 library(ElemStatLearn)
 library(dplyr)
-library(MASS)
 ```
 
 Utilizamos `head()` para ver las primeras filas y hacernos una idea de las variables disponibles
@@ -37,7 +48,6 @@ La columna `train` se utiliza en estudios previos para indicar las filas de entr
 Dado que esta práctica no la requiere, eliminamos esta columna para simplificar el conjunto de datos.
 
 ```{r}
-
 prostate = prostate %>% select(-train)
 head(prostate)
 ```
@@ -363,7 +373,7 @@ $$
     \text{cavol} = e^{ln(\text{cavol})}
   $$
 
-    Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
+Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 
   $$
     \text{PSA} = e^{1.50730 } +\text{cavol}^{0.71932} 
@@ -964,9 +974,6 @@ Obtenemos una probabilidad del `r round(prob.nolcavol*100,1)`% de que `svi`$=1$ 
 # 9. PCA-PCR
 
 ## 9.1 Biplot y `summary` del modelo
-```{r}
-# Carga de librerías
-```
 
 Primero, creamos nuestro modelo de componentes principales **PCA**:
 ```{r}
@@ -1024,3 +1031,86 @@ En este biplot podemos observar los puntos que representan a los pacientes en el
 Podemos observar diferentes agrupaciones de puntos, lo que indicaría que estas observaciones tendrían valores similares también en las variables originales.
 
 Además, gracias a las flechas que indican la composición de las componentes principales según las variables originales, podemos observar que, al haber un ángulo pequeño entre ellas, las variables `lcavol`, `lcp` y `svi` están fuertemente correlacionadas, como se corrobora en apartados anteriores. Lo mismo ocurriría con `lbph` y `lweight` aunque en menor medida, al haber un ángulo de separación mayor entre ellas. 
+
+# 9.2 PCR
+
+Iniciamos con una carga de las librerias necesarias
+
+```{r}
+library(caret)
+```
+
+
+## Análisis exploratorio de datos y correlación
+
+```{r}
+df <- prostate
+df$svi <- as.numeric(df$svi)
+
+corrplot(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]), 
+         type = "upper", 
+         tl.cex = 0.7, 
+         diag = FALSE,
+         addCoef.col = "black") 
+```
+```{r}
+# Identificación variables con alta correlación
+findCorrelation(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]), 
+                names = TRUE,
+                cutoff = 0.44)
+```
+## Ajuste de la Regresión con Componentes Principales (PCR)
+Para abordar la colinealidad, ajusto un modelo de PCR y uso validación cruzada para evaluar el error de predicción:
+
+```{r}
+library(pls)
+
+set.seed(42)
+pcr.fit <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = df, scale = TRUE, validation = "CV")
+summary(pcr.fit)
+```
+Se incluye `scale = TRUE` para normalizar los predictores y `validation = "CV"` para usar validación cruzada en la evaluación.
+
+## Visualización del MSE y selección de componentes principales
+
+Para decidir el número óptimo de componentes principales, visualizo el MSE con el siguiente gráfico:
+
+```{r}
+validationplot(pcr.fit, val.type = "MSEP")
+```
+Visualmente ya ve ve que  el menor error de validación cruzada más pequeño es con M = 5.
+
+```{r}
+which.min( MSEP( pcr.fit )$val[1,1, ] ) - 1
+```
+## División en conjuntos de entrenamiento y prueba
+
+Se dividen los datos en conjuntos de entrenamiento y prueba para evaluar el rendimiento del modelo:
+```{r}
+# Creo los conjuntos de entrenamiento y prueba
+set.seed(1)
+train_index <- sample(1:nrow(df), nrow(df) * 0.7)
+train_data <- df[train_index, ]
+test_data <- df[-train_index, ]
+
+# Ajusto el modelo con los datos de entrenamiento
+pcr.fit.train <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi,, data = train_data, scale = TRUE, validation = "CV")
+summary(pcr.fit.train)
+```
+##  Evaluación del modelo en el conjunto de prueba
+Se predicen los valores de `lpsa` en el conjunto de prueba y calculo el `MSE` para medir la precisión del modelo:
+```{r}
+ncomp_opt <- 5  # Ajusto este número basado en el gráfico de MSEP
+pcr.pred <- predict(pcr.fit.train, test_data, ncomp = ncomp_opt)
+
+# Calculo el MSE
+mse <- mean((pcr.pred - test_data$lpsa)^2)
+print(mse)
+
+```
+
+## Ajuste del modelo final
+```{r}
+pcr.final <- pcr(lpsa ~ ., data = df, scale = TRUE, ncomp = ncomp_opt)
+summary(pcr.final)
+```
