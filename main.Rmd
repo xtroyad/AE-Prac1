@@ -507,7 +507,7 @@ matplot(log(ridge.lambda), t(ridge.coefs), type = "l", lty = 1, col = rainbow(nr
 legend("topright", legend = colnames(X), col = rainbow(nrow(ridge.coefs)), lty = 1, cex = 0.6)
 ```
 
-Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx (-\inf,-4)$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes a excepción de `lcp`, el cual comienza con un valor negativo y crece hasta tener uno positivo. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. 
+Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx -4$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes a excepción de `lcp`, el cual comienza con un valor negativo y crece hasta tener uno positivo. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. 
 
 Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=0$:
 
