@@ -399,7 +399,6 @@ Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 library(corrplot)
 
 cor_data = prostate %>% select(-age, -pgg45, -gleason, -svi)
-
 cor_matrix <- cor(cor_data)
 
 # Quitamos las relaciones (x, x), puede ser menos intuitiva de interpretar, pero
@@ -1056,7 +1055,6 @@ corrplot(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]),
 
 Si hubiéramos usado la función `findCorrelation`, no se vería ninguna hasta modificar el valor por defecto de `cutoff = 0.95`. 
 ```{r}
-# Identificación variables con alta correlación
 findCorrelation(cor(df[, c("lcavol", "lweight", "lbph", "lcp", "svi")]), 
                 names = TRUE,
                 cutoff = 0.44)
@@ -1132,7 +1130,7 @@ Vemos que en este caso el mejor `M` es 2 para este conjunto de entrenamiento, y 
 ##  Evaluación del modelo en el conjunto de prueba
 Se predicen los valores de `lpsa` en el conjunto de prueba y calculo el `MSE` para medir la precisión del modelo:
 ```{r}
-ncomp_opt <- 5
+ncomp_opt <- 2
 pcr.pred <- predict(pcr.fit.train, 
                     test_data, 
                     ncomp = ncomp_opt)
@@ -1145,8 +1143,9 @@ print(mse)
 
 ## Ajuste del modelo final
 ```{r}
-pcr.final <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = df, 
+pcr.final <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, 
+                 data = df, 
                  scale = TRUE, 
-                 ncomp = 5)
+                 ncomp = 2)
 summary(pcr.final)
 ```
