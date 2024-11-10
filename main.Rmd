@@ -86,11 +86,11 @@ any(is.na(prostate))
 
 Dado que no hay ningún valor nulo en nuestro set de datos, continuamos.
 
-## ¿Están estandarizadas las variables? En este punto del análisis, ¿es necesario normalizarlas?
+## 1.5 ¿Están estandarizadas las variables? En este punto del análisis, ¿es necesario normalizarlas?
 
 Tras revisar los histogramas realizados en el subapartado 2 podemos concluir que, dados los rangos de las variables y su disposición, estos no se encuentran normalizados.
 
-## ¿Por qué crees que algunas variables están es escala logarítmica?
+## 1.6 ¿Por qué crees que algunas variables están es escala logarítmica?
 
 El objetivo de poner algunas de las variables en escala logarítmica es el de facilitar su posterior análisis por varios motivos:
 
@@ -132,7 +132,7 @@ En el caso de la edad nos encontramos una distribución que podría recordar a l
 
 # 3. Análisis de frecuencias
 
-## ¿Qué porcentaje de pacientes con la puntuación de Gleason igual a 7, presenta índice igual svi igual a 0?
+## 3.1 ¿Qué porcentaje de pacientes con la puntuación de Gleason igual a 7, presenta índice igual svi igual a 0?
 
 ```{r}
 # Filtramos por gleason = 7
@@ -159,7 +159,7 @@ fig <- plot_ly(
 fig
 ```
 
-## ¿Qué porcentaje de pacientes con índice svi igual a 0 tiene la puntuación de Gleason igual a 7?
+## 3.2 ¿Qué porcentaje de pacientes con índice svi igual a 0 tiene la puntuación de Gleason igual a 7?
 
 ```{r}
 # Filtramos por gleason = 7
@@ -186,7 +186,7 @@ fig <- plot_ly(
 fig
 ```
 
-## Estas dos variables, ¿son independientes?
+## 3.3 Estas dos variables, ¿son independientes?
 
 Vistos los resultados de estos dos últimos subapartados, podemos pensar que estas variables están relacionadas. Además, ya en el apartado 2 se vio como también podría existir una posible relación entre las variables y se le trató de dar una explicación lógica.
 
