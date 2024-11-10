@@ -661,6 +661,7 @@ rsq.adj <- function(y,y2,p) {
 }
 ```
 
+
 ```{r}
 pred.multiple <- predict(modelo_lpsa, newdata = as.data.frame(X.test))
 
@@ -699,7 +700,6 @@ ggplot(resultados.long, aes(Metric, Valor, fill = Modelo)) +
 
 ## 6.4 Conclusiones
 
-
 Como podemos observar, el modelo que mejor ha funcionado en nuestro caso es el de la regresión múltiple, teniendo un resultado mejor que el de los otros modelos tras medir su rendimiento usando **MSE**, $R^2$ y $R^2_\text{adj}$ en el conjunto de testeo.
 
 Así, podemos concluir que los modelos que penalizan un número mayor de predictores, en este caso, funciona peor que el modelo de regresión múltiple que no cuenta con esa penalización. Además, tampoco representan una mejora en el rendimiento o en el espacio de almacenamiento, dado que contamos con un número muy limitado de predictores y de observaciones, por lo que no se recomendaría su uso en situaciones similares.
@@ -709,7 +709,7 @@ Para responder a si los modelos lineales podrían ser utilizados o no, revisamos
 - $R^2 = `r resultados$Multiple[2]`$
 - $R^2_\text{adj} = `r resultados$Multiple[3]`$
 
-Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría ser utilizado para realizar predicciones.
+Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría llegar a ser utilizado para realizar predicciones.
 
 # 7. LDA
 
