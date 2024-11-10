@@ -398,7 +398,8 @@ Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 ```{r}
 library(corrplot)
 
-cor_data = prostate %>% select(-age, -pgg45, -gleason, -svi)
+cor_data = prostate %>% select(-age, -pgg45, -gleason)
+cor_data$svi = as.numeric(cor_data$svi)
 cor_matrix <- cor(cor_data)
 
 # Quitamos las relaciones (x, x), puede ser menos intuitiva de interpretar, pero
@@ -713,6 +714,7 @@ Ajustar el modelo LDA utilizando `svi` como variable de respuesta y `lcavol`, `l
 ```{r}
 library(MASS)
 
+prostate$svi <- as.factor(prostate$svi)
 lda_model <- lda(svi ~ lcavol + lcp + lpsa, data = prostate)
 ```
 
