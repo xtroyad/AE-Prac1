@@ -1,7 +1,11 @@
 ---
 title: "Práctica de Aprendizaje Estadístico - Parte 1"
-author: " "
-date: "2024-10-30"
+author: "Eduardo Valero Vilella y Cristian Calva Troya"
+date: "2024-11-10"
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 ```{r}
 options(warn = -1)
@@ -12,9 +16,7 @@ suppressPackageStartupMessages({
   library(corrplot)
   library(caret)
 })
-
 ```
-
 
 # 0. Carga los datos y elimina la variable TRAIN.
 
@@ -229,7 +231,7 @@ summary(modelo_lineal)
 
 ## 4.1 Interpretación del Modelo Lineal calculado
 
-### Ecuación del Modelo
+Ecuación del Modelo:
 
 La ecuación del modelo de regresión lineal es:
 
@@ -237,11 +239,11 @@ $$
 \text{lpsa} = 1.50730 + 0.71932 \cdot \text{lcavol}
 $$
 
-### Intercepto ($\beta_0$)
+Intercepto ($\beta_0$):
 
 -   El intercepto de **1.50730** indica el valor estimado de `lpsa` cuando `lcavol` es igual a 0.
 
-### Pendiente ($\beta_1$)
+Pendiente ($\beta_1$):
 
 -   El coeficiente para `lcavol` es **0.71932**. Esto sugiere que, por cada unidad de incremento en `lcavol`, se espera que `lpsa` aumente en aproximadamente **0.71932** unidades.
 
@@ -282,7 +284,6 @@ Ademas, podemos estimar que por cada cm (10mm) de tumor aumentado, el PSA aument
 
 En el análisis de regresión lineal, se ha observado que tanto el coeficiente del intercepto como el coeficiente de `lcavol` presentan valores $p$ muy pequeños $(< 2e-16)$. Esto indica que podemos rechazar la hipótesis nula $(H_0)$ de que los "verdaderos" coeficientes son nulos. Específicamente, esto significa que existe una relación estadísticamente significativa entre el volumen del cáncer (`lcavol`) y el nivel de antígeno específico de la próstata (`lpsa`).
 
-El valor t (t-statistic) para el coeficiente de `lcavol` es 10.55, lo que indica una fuerte relación entre el volumen del cáncer y el nivel de PSA. Además, el p-value correspondiente a este valor t es extremadamente bajo. Esto significa que la probabilidad de obtener un valor tan alto o más, suponiendo que no hay relación entre estas variables (es decir, que la hipótesis nula $H_0$ es cierta), es prácticamente cero. En otras palabras, este resultado sugiere que hay una conexión significativa entre el volumen del cáncer y los niveles de antígeno específico de la próstata.
 
 ## 4.4 RSE y la eficacia del modelo.
 
@@ -308,13 +309,13 @@ Si echamos un vistazo de nuevo a nuestro resultado:
 summary(modelo_lineal)
 ```
 
-### **RSE**
+### RSE
 
 Un RSE de 0.7875 indica que, en promedio, las predicciones del modelo se desvían de los valores observados de la variable de respuesta (`lpsa`) en aproximadamente 0.7875 unidades en la escala logarítmica.
 
 Indicando que por cada cm(10mm) de aumento en el `lcavol` tenemos un desvía de 7.8 ng/m.
 
-### **R-cuadrado (R²)**
+### R-cuadrado (R²)
 
 El coeficiente de determinación $R^2$ es una métrica que indica la proporción de la varianza en la variable dependiente `lpsa` que es predecible a partir de la variable independiente `lcavol`. En este modelo, el $R^2$ es:
 
@@ -322,7 +323,7 @@ $R^2 = 0.5394$
 
 -   **Interpretación**: Aproximadamente el 53.94% de la variabilidad en los niveles de PSA puede ser explicada por el volumen de cáncer. Esto sugiere una relación moderada entre las variables.
 
-### **R-cuadrado Ajustado (Adjusted R²)**
+### R-cuadrado Ajustado (Adjusted R²)
 
 El $R^2$ ajustado, que en este caso es:
 
@@ -332,7 +333,7 @@ $R^2$ Ajustado = 0.5346
 
 ## 4. 6 Interpretación del Modelo Lineal (`psa` y `cavol`)
 
-### **Ecuación del Modelo**
+### Ecuación del Modelo
 
 El modelo de regresión lineal simple que hemos calculado es:
 
@@ -420,7 +421,7 @@ La matriz de correlación muestra las correlaciones de Pearson entre las variabl
 
 ### Análisis de la Matriz de Correlación
 
-Se ha realizado un análisis de correlación entre las variables del conjunto de datos, excluyendo las siguientes variables: **`age`**, **`pgg45`**, **`gleason`**, y **`svi`**. Las variables consideradas son: **`lcavol`**, **`lweight`**, **`lbph`**, **`lcp`**, y **`lpsa`**. A continuación se presentan los resultados y las interpretaciones:
+Se ha realizado un análisis de correlación entre las variables del conjunto de datos. A continuación se presentan los resultados y las interpretaciones:
 
 1.  **(`lcavol`, `lpsa`)**
     -   **Máxima correlación mutua**: (0.734).
@@ -437,11 +438,11 @@ Se ha realizado un análisis de correlación entre las variables del conjunto de
 5.  **`age_num`**:
     -   **Máxima correlación:** `lbph` (0.364).
     -   **Interpretación:** La correlación moderada entre la edad en formato numérico (`age_num`) y la hipertrofia prostática benigna (`lbph`) sugiere que a mayor edad, la probabilidad de presentar hipertrofia benigna aumenta.
-6.  **`pgg45_num`**:
-    -   **Máxima correlación mutua:** `gleason_num` (0.752).
+6.  **(`pgg45_num`, `gleason_num`)**:
+    -   **Máxima correlación mutua:**  (0.752).
     -   **Interpretación:** La alta correlación entre el porcentaje de patrón Gleason 4 o 5 (`pgg45_num`) y la puntuación total de Gleason (`gleason_num`) refuerza que un mayor porcentaje de patrones más agresivos se asocia con una puntuación de Gleason más alta.
 
-# 5.2 Modelo de regresión lineal para predecir `lpsa`.
+## 5.2 Modelo de regresión lineal para predecir `lpsa`.
 
 ```{r}
 modelo_lpsa = lm(lpsa ~ lcavol + lweight + lbph + lcp + svi, 
@@ -456,7 +457,7 @@ $$
 \text{lpsa} = -1.12471 + 0.54790 \cdot \text{lcavol} + 0.53036 \cdot \text{lweight} + 0.07999 \cdot \text{lbph} - 0.03638 \cdot \text{lcp} + 0.75975 \cdot \text{svi} + \epsilon
 $$
 
-## Coeficientes:
+### Coeficientes:
 
 -   `lcavol`: 0.54790 (muy significativo, `p = 8.56e-09`). Esto indica que, manteniendo las otras variables constantes, un aumento de una unidad en el volumen del cáncer (`lcavol`) se asocia con un aumento de 0.54790 unidades en los niveles de PSA (`lpsa`).
 
@@ -468,7 +469,7 @@ $$
 
 -   `svi`: 0.75975 (muy significativo, `p = 0.00221`). La invasión seminal (`svi`) tiene una asociación significativa con los niveles de PSA, indicando que a medida que la invasión seminal aumenta, también aumentan los niveles de PSA.
 
-## Rendimiento
+### Rendimiento
 
 $R^{2}$ ajustado: 0.6248. El modelo explica aproximadamente el 62.48% de la variación en los niveles de PSA. Esto sugiere una mejora en la capacidad predictiva con la adición de la variable svi, aunque aún hay un 37.52% de la variación que no se explica por las variables incluidas en el modelo.
 
@@ -476,7 +477,7 @@ $R^{2}$ ajustado: 0.6248. El modelo explica aproximadamente el 62.48% de la vari
 
 **F-estadístico** 32.97 con p-valor \< 2.2e-16. Este resultado indica que el modelo es altamente significativo en su conjunto, lo que significa que al menos una de las variables predictoras tiene un impacto significativo en los niveles de PSA.
 
-## Conclusiones
+### Conclusiones
 
 El modelo de regresión muestra que `lcavol`, `lweight`, y `svi` son los factores más relevantes para predecir los niveles de PSA, con relaciones significativas y positivas. En cambio, `lbph` y `lcp` no tienen un impacto significativo en los niveles de PSA. El $R^{2}$ ajustado de 0.6248 indica que el modelo explica el 62.48% de la variabilidad en PSA, y el RSE bajo sugiere predicciones precisas. El modelo es útil, pero podría mejorarse considerando otro conjunto de variables.
 
@@ -1056,7 +1057,7 @@ Podemos observar diferentes agrupaciones de puntos, lo que indicaría que estas 
 
 Además, gracias a las flechas que indican la composición de las componentes principales según las variables originales, podemos observar que, al haber un ángulo pequeño entre ellas, las variables `lcavol`, `lcp` y `svi` están fuertemente correlacionadas, como se corrobora en apartados anteriores. Lo mismo ocurriría con `lbph` y `lweight` aunque en menor medida, al haber un ángulo de separación mayor entre ellas. 
 
-# 9.2 PCR
+## 9.2 PCR
 
 Iniciamos con una carga de las librerias necesarias
 
@@ -1065,7 +1066,7 @@ library(caret)
 ```
 
 
-## Análisis exploratorio de datos y correlación
+### Análisis exploratorio de datos y correlación
 Iniciamos echando una pequeña vista a la correlación existente entre los datos. Se ha eliminado la diagonal para mejorar la visualización.
 ```{r}
 df <- prostate
@@ -1104,7 +1105,7 @@ pcr.fit = pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi,
 ```
 
 
-## Visualización del MSE y selección de componentes principales
+### Visualización del MSE y selección de componentes principales
 
 Para decidir el número óptimo de componentes principales, se traza las puntuaciones de la validación cruzada utilizando `validationplot()`. Visualmente ya se ve que  el menor error de validación cruzada es con M = 5. 
 
@@ -1124,66 +1125,34 @@ O a través de la función `which.min()` vemos el error más pequeño:
 ```{r}
 which.min( MSEP( pcr.fit )$val[1,1, ] ) - 1
 ```
-## División en conjuntos de entrenamiento y prueba
-
-Se dividen los datos en conjuntos de entrenamiento y prueba para evaluar el rendimiento del modelo:
-```{r}
-# Se crea los conjuntos de entrenamiento y prueba
-set.seed(1)
-train_index <- sample(1:nrow(df), nrow(df) * 0.7)
-train_data <- df[train_index, ]
-test_data <- df[-train_index, ]
-
-# Se ajusta el modelo con los datos de entrenamiento
-pcr.fit.train <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi,, 
-                     data = train_data,
-                     scale = TRUE, 
-                     validation = "CV")
-
-summary(pcr.fit.train)
-```
-```{r}
-validationplot(pcr.fit.train, val.type = "MSEP")
-```
-
-Usemos `which.min()` para tenerlo más claro...:
-```{r}
-which.min( MSEP( pcr.fit.train )$val[1,1, ] ) - 1
-```
-Vemos que en este caso el mejor `M` es 2 para este conjunto de entrenamiento, y no tendriamos que tener en cuenta todas la variables.
-
-##  Evaluación del modelo en el conjunto de prueba
-Se predicen los valores de `lpsa` en el conjunto de prueba y calculo el `MSE` para medir la precisión del modelo:
-```{r}
-ncomp_opt <- 2
-pcr.pred <- predict(pcr.fit.train, 
-                    test_data, 
-                    ncomp = ncomp_opt)
-
-# Calculo el MSE
-mse <- mean((pcr.pred - test_data$lpsa)^2)
-print(mse)
-
-```
-
-## Ajuste del modelo final
-```{r}
-pcr.final <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi, 
-                 data = df, 
-                 scale = TRUE, 
-                 ncomp = 2)
-summary(pcr.final)
-```
+### Comparación con Regresión lineal múltiple
 
 ```{r}
 # Predicciones
 pcr.pred_full <- predict(pcr.fit, df, ncomp = 5)
 multi_pred_full <- predict(modelo_lpsa, newdata = df)
 
-# MSE pcr
-mse_pcr_full <- mean((pcr.pred_full - df$lpsa)^2)
-# MSE multi
-mse_multi_full <- mean((multi_pred_full - df$lpsa)^2)
+
+
+# SSE para PCR
+sse_pcr_full <- sum((pcr.pred_full - df$lpsa)^2)
+
+# SSE para Regresión Lineal Múltiple
+sse_multi_full <- sum((multi_pred_full - df$lpsa)^2)
+
+
+n <- nrow(df)
+p_pcr <- 5  
+p_multi <- length(coef(modelo_lpsa)) 
+
+
+# Calcular el RSE para PCR
+rse_pcr_full <- sqrt(sse_pcr_full / (n - p_pcr))
+# Calcular el RSE para Regresión Lineal Múltiple
+rse_multi_full <- sqrt(sse_multi_full / (n - p_multi))
+
+
+
 
 # R2 pcr
 ss_total_full <- sum((df$lpsa - mean(df$lpsa))^2)
@@ -1196,24 +1165,30 @@ adj_r_squared_multi_full <- summary(modelo_lpsa)$adj.r.squared
 
 cat("PCR: regresión de componentes principales\n",
     "MULTI: Regresión Lineal Múltiple\n\n",
-    "############ MSE ############\n\n",
-    "MSE (PCR):", mse_pcr_full, "\n",
-    "MSE (MULTI):", mse_multi_full, "\n\n",
+    "############ RSE ############\n\n",
+    "RSE (PCR):", rse_pcr_full, "\n",
+    "RSE (MULTI):", rse_multi_full, "\n\n",
     "############ R² ############\n\n",
     "R² ajustado (PCR):", adj_r_squared_pcr_full, "\n",
     "R² ajustado (MULTI):", adj_r_squared_multi_full, "\n")
-
 ```
-**MSE (Error Cuadrático Medio)**:
+**RSE (Error Estándar de la Regresión)**:
 
-Ambos modelos, **PCR** y **Regresión Lineal Múltiple (MULTI)**, tienen un MSE de **0.469**, lo que indica que la precisión de las predicciones en ambos casos es comparable.
+Ambos modelos, **PCR** y **Regresión Lineal Múltiple (MULTI)**, tienen un RSE muy similar:
+
+- **RSE (PCR)**: `r round(rse_pcr_full, 4)`  
+- **RSE (MULTI)**: `r round(rse_multi_full, 4)`
+
+Esto indica que ambos modelos tienen un error estándar de la regresión comparable, lo que sugiere que la dispersión de los errores de las predicciones es casi igual en ambos casos.
 
 **R² ajustado**:
 
--   El modelo de **PCR** tiene un R² ajustado de **0.6368**, lo que significa que explica el **63.68%** de la variabilidad de los datos.
--   El modelo de **Regresión Lineal Múltiple (MULTI)** tiene un R² ajustado de **0.6248**, lo que implica que explica el **62.48%** de la variabilidad de los datos.
+- El modelo de **PCR** tiene un **R² ajustado de 0.6368**, lo que significa que explica el **63.68%** de la variabilidad de los datos.
+- El modelo de **Regresión Lineal Múltiple (MULTI)** tiene un **R² ajustado de 0.6248**, lo que implica que explica el **62.48%** de la variabilidad de los datos.
 
 **Conclusión**:
 
-Aunque ambos modelos presentan un MSE igual, lo que refleja una precisión similar en las predicciones, el modelo **PCR** tiene una ligera ventaja en cuanto a **R² ajustado**. Esto sugiere que **PCR** está mejor ajustado a los datos y puede estar aprovechando de manera más eficiente la estructura de las variables. Sin embargo, la diferencia no es tan grande, por lo que ambos modelos pueden ser igualmente válidos dependiendo del contexto y los requisitos del análisis.
+Aunque ambos modelos presentan **RSE similares**, lo que refleja una dispersión de errores comparable, el modelo **PCR** tiene una ligera ventaja en cuanto a **R² ajustado**, indicando que **PCR** explica mejor la variabilidad de los datos. Este pequeño beneficio en el ajuste hace que **PCR** sea el modelo preferido en este caso, ya que demuestra un mayor rendimiento al ajustar los datos.
+
+Sin embargo, la diferencia no es tan significativa, por lo que dependiendo del contexto y los requisitos del análisis, **Regresión Lineal Múltiple (MULTI)** también puede ser una opción válida si se busca simplicidad o interpretabilidad adicional.
 
