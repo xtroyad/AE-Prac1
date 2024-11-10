@@ -398,20 +398,22 @@ Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 library(corrplot)
 prostate$svi = as.numeric(prostate$svi)
 
-cor_data = prostate %>% select(-age, -pgg45, -gleason)
-cor_matrix <- cor(cor_data)
+prostate2 = prostate
 
-# Quitamos las relaciones (x, x), puede ser menos intuitiva de interpretar, pero
-# los colores consiguen ser más descriptivos.
+prostate2$age_num <- as.numeric(prostate2$age)
+prostate2$pgg45_num <- as.numeric(prostate2$pgg45)
+prostate2$gleason_num <- as.numeric(prostate2$gleason)
+
+cor_data = prostate2 %>% select(-age, -pgg45, -gleason)
+cor_matrix = cor(cor_data)
+
 corrplot(cor_matrix, 
-         diag = FALSE, 
+         diag = FALSE,
          method = "circle", 
          type = "upper", 
          tl.col = "black", 
-         tl.srt = 25, 
-         title = "Matriz de Correlación entre Variables")
-
-print(cor_matrix)
+         tl.srt = 25,
+         addCoef.col = "black")
 ```
 
 La matriz de correlación muestra las correlaciones de Pearson entre las variables del conjunto de datos, con valores que van de -1 a 1.
@@ -420,51 +422,63 @@ La matriz de correlación muestra las correlaciones de Pearson entre las variabl
 
 Se ha realizado un análisis de correlación entre las variables del conjunto de datos, excluyendo las siguientes variables: **`age`**, **`pgg45`**, **`gleason`**, y **`svi`**. Las variables consideradas son: **`lcavol`**, **`lweight`**, **`lbph`**, **`lcp`**, y **`lpsa`**. A continuación se presentan los resultados y las interpretaciones:
 
-1.  **`lcavol`**:
-    -   **Máxima correlación**: `lpsa` (0.734).
+1.  **(`lcavol`, `lpsa`)**
+    -   **Máxima correlación mutua**: (0.734).
     -   **Interpretación**: La fuerte correlación entre el volumen del cáncer en escala logarítmica (`lcavol`) y el nivel de antígeno específico de la próstata (PSA) sugiere que a medida que aumenta el volumen del cáncer, también tienden a aumentar los niveles de PSA.
-2.  **`lpsa`**:
-    -   **Máxima correlación**: `lcavol` (0.734).
-    -   **Interpretación**: Refuerza la conexión entre el nivel de PSA y el volumen del cáncer. Esto implica que los médicos pueden utilizar el PSA como un indicador indirecto del volumen tumoral y, por lo tanto, de la severidad del cáncer.
-3.  **`lweight`**:
-    -   **Máxima correlación**: `lbph` (0.442).
+2.  **(`lbph`, `lweight`)**:
+    -   **Máxima correlación mutua**: (0.442).
     -   **Interpretación**: La correlación entre el peso en escala logarítmica (`lweight`) y la hipertrofia benigna de próstata (`lbph`) indica que hay una relación positiva entre ambos. Esto sugiere que los hombres con mayor peso pueden tener mayor riesgo de desarrollar condiciones benignas en la próstata.
-4.  **`lbph`**:
-    -   **Máxima correlación**: `lweight` (0.442).
-    -   **Interpretación**: Similar a lo mencionado anteriormente, esta correlación sugiere que el aumento de peso podría estar relacionado con la aparición de hipertrofia benigna, sugiriendo un vínculo en la salud prostática.
-5.  **`lcp`**:
+3.  **`lcp`**:
     -   **Máxima correlación**: `lcavol` (0.675).
-    -   **Interpretación**: La correlación entre los niveles de PSA en escala logarítmica (`lcp`) y el volumen del cáncer (`lcavol`) indica que a mayor volumen tumoral, los niveles de PSA también tienden a ser más altos. Esto es importante para evaluar la progresión del cáncer y determinar el tratamiento adecuado.
+    -   **Interpretación**: La correlación entre el nivel de extensión del cáncer dentro de la cápsula (`lcp`) y el volumen del cáncer (`lcavol`) tienen trivial relación.
+4.  **`svi`**:
+    -   **Máxima correlación**: `lcp` (0.68).
+    -   **Interpretación**: La correlación entre el nivel de invasión seminal (`svi`) y el nivel de extensión del cáncer dentro de la cápsula (`lcp`) es positiva y moderada (0.68). Esto indica que a medida que aumenta la invasión a las vesículas seminales, también podría aumentar la extensión del cáncer dentro de la cápsula.
+5.  **`age_num`**:
+    -   **Máxima correlación:** `lbph` (0.364).
+    -   **Interpretación:** La correlación moderada entre la edad en formato numérico (`age_num`) y la hipertrofia prostática benigna (`lbph`) sugiere que a mayor edad, la probabilidad de presentar hipertrofia benigna aumenta.
+6.  **`pgg45_num`**:
+    -   **Máxima correlación mutua:** `gleason_num` (0.752).
+    -   **Interpretación:** La alta correlación entre el porcentaje de patrón Gleason 4 o 5 (`pgg45_num`) y la puntuación total de Gleason (`gleason_num`) refuerza que un mayor porcentaje de patrones más agresivos se asocia con una puntuación de Gleason más alta.
 
 # 5.2 Modelo de regresión lineal para predecir `lpsa`.
 
 ```{r}
-modelo_lpsa <- lm(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = prostate)
+modelo_lpsa = lm(lpsa ~ lcavol + lweight + lbph + lcp + svi, 
+                  data = prostate)
 
 summary(modelo_lpsa)
 ```
 
-1.  **Coeficientes**:
+Siendo la siguiente su función:
 
--   **`lcavol`**: 0.58479 (muy significativo, p = 3.65e-09). Esto indica que, manteniendo las otras variables constantes, un aumento de una unidad en `lcavol` se asocia con un aumento de 0.58479 unidades en `lpsa`.
+$$
+\text{lpsa} = -1.12471 + 0.54790 \cdot \text{lcavol} + 0.53036 \cdot \text{lweight} + 0.07999 \cdot \text{lbph} - 0.03638 \cdot \text{lcp} + 0.75975 \cdot \text{svi} + \epsilon
+$$
 
--   **`lweight`**: 0.58630 (significativo, p = 0.0055). Al igual que `lcavol`, un aumento de una unidad en `lweight` también se asocia con un incremento en `lpsa`, lo que sugiere que el peso del paciente puede influir en los niveles de PSA.
+## Coeficientes:
 
--   **`lbph`**: 0.05412 (no significativo, p = 0.3571). Esto sugiere que la hipertrofia benigna de próstata no tiene un efecto significativo en los niveles de PSA.
+-   `lcavol`: 0.54790 (muy significativo, `p = 8.56e-09`). Esto indica que, manteniendo las otras variables constantes, un aumento de una unidad en el volumen del cáncer (`lcavol`) se asocia con un aumento de 0.54790 unidades en los niveles de PSA (`lpsa`).
 
--   **`lcp`**: 0.09102 (no significativo, p = 0.2178). Similar a `lbph`, no parece tener un efecto significativo en `lpsa`. Su variación no influye en el resultado.
+-   `lweight`: 0.53036 (significativo, `p = 0.00867`). Similar a `lcavol`, un aumento de una unidad en el peso del paciente (`lweight`) se asocia con un aumento en los niveles de PSA, sugiriendo que el peso del paciente podría influir en el diagnóstico.
 
-2.  **Rendimiento**:
+-   `lbph`: 0.07999 (no significativo, `p = 0.15971`). La hipertrofia benigna de próstata (`lbph`) no tiene un efecto significativo en los niveles de PSA, ya que su valor de p es mayor que 0.05.
 
-El modelo tiene un R² ajustado de aproximadamente 0.59, lo que indica que, aunque hay una correlación significativa con `lpsa`, hay un 40% de la variación que no se explica por las variables incluidas. Esto sugiere que pueden existir otros factores que influyen en `lpsa` que no están siendo considerados en el modelo actual.
+-   `lcp`: -0.03638 (no significativo, `p = 0.65391`). El nivel de extensión del cáncer dentro de la cápsula (`lcp`) no tiene un efecto significativo sobre los niveles de PSA.
 
-El RSE es 0.7405, lo que indica el tamaño promedio de los errores en las predicciones del modelo. Un RSE relativamente bajo.
+-   `svi`: 0.75975 (muy significativo, `p = 0.00221`). La invasión seminal (`svi`) tiene una asociación significativa con los niveles de PSA, indicando que a medida que la invasión seminal aumenta, también aumentan los niveles de PSA.
+
+## Rendimiento
+
+$R^{2}$ ajustado: 0.6248. El modelo explica aproximadamente el 62.48% de la variación en los niveles de PSA. Esto sugiere una mejora en la capacidad predictiva con la adición de la variable svi, aunque aún hay un 37.52% de la variación que no se explica por las variables incluidas en el modelo.
+
+**RSE (Error estándar de los residuos):** 0.7071. Este valor indica el tamaño promedio de los errores en las predicciones del modelo, siendo relativamente bajo, lo que sugiere que las predicciones son bastante precisas.
+
+**F-estadístico** 32.97 con p-valor \< 2.2e-16. Este resultado indica que el modelo es altamente significativo en su conjunto, lo que significa que al menos una de las variables predictoras tiene un impacto significativo en los niveles de PSA.
 
 ## Conclusiones
 
-Se observa que `lcavol` y `lpsa` están fuertemente correlacionados, lo que resalta su importancia en el diagnóstico y seguimiento del cáncer de próstata.
-
-La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida pueden influir en la salud prostática.
+El modelo de regresión muestra que `lcavol`, `lweight`, y `svi` son los factores más relevantes para predecir los niveles de PSA, con relaciones significativas y positivas. En cambio, `lbph` y `lcp` no tienen un impacto significativo en los niveles de PSA. El $R^{2}$ ajustado de 0.6248 indica que el modelo explica el 62.48% de la variabilidad en PSA, y el RSE bajo sugiere predicciones precisas. El modelo es útil, pero podría mejorarse considerando otro conjunto de variables.
 
 # 6. Modelo de Ridge y Lasso
 
@@ -713,11 +727,15 @@ Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo
 
 # 7. LDA
 
+```{r}
+suppressPackageStartupMessages({
+  library(MASS)
+})
+```
+
 Ajustar el modelo LDA utilizando `svi` como variable de respuesta y `lcavol`, `lcp`, `lpsa` como variables predictoras.
 
 ```{r}
-library(MASS)
-
 prostate$svi <- as.factor(prostate$svi)
 lda_model <- lda(svi ~ lcavol + lcp + lpsa, data = prostate)
 ```
@@ -822,7 +840,8 @@ lda_model.pred$x[1:3]
 
 El modelo LDA ha mostrado un rendimiento desigual debido a un posible desbalanceo de clases, donde el grupo 0 es significativamente más grande que el grupo 1. Esto ha llevado a que el modelo clasifique correctamente 69 observaciones del grupo 0, pero solo 17 del grupo 1. Aunque el número de falsos positivos es relativamente bajo (4), los falsos negativos (7) indican que el modelo no está detectando adecuadamente todas las observaciones del grupo 1. Este comportamiento es común en escenarios con clases desbalanceadas.
 
-Aunque el modelo no es completamente ineficaz, su capacidad para identificar el grupo minoritario es limitada. Se podrían explorar técnicas como el ajuste del umbral de clasificación o el uso de técnicas de balanceo de clases (por ejemplo, sobremuestreo o submuestreo) para mejorar el rendimiento en la clasificación del grupo 1 y obtener una predicción más equilibrada.
+Aunque el modelo no es completamente ineficaz, su capacidad para identificar el grupo minoritario es limitada. Se podrían explorar técnicas como el ajuste el balanceo de clases (por ejemplo, sobremuestreo o submuestreo) para mejorar el rendimiento en la clasificación del grupo 1 y obtener una predicción más equilibrada.
+
 
 # 8. Regresión Logística
 
