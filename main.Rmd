@@ -35,7 +35,6 @@ library(dplyr)
 Utilizamos `head()` para ver las primeras filas y hacernos una idea de las variables disponibles
 
 ```{r }
-
 data("prostate", package = "ElemStatLearn")
 head(prostate)
 attach(prostate)
@@ -469,7 +468,7 @@ La relación entre `lweight` y `lbph` sugiere que los factores de estilo de vida
 
 # 6. Modelo de Ridge y Lasso
 
-Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro conjunto de datos lo dividimos entre el conjunto de **training** y el de **testeo**. Para crear nuestro training set utilizaremos el 70% de las entradas de nuestro conjunto de datos. Como en el ejercicio anterior, eliminaremos también las variables categoricas, como el `svi`.
+Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utilizaremos la librería `glmnet`. Primero preparamos nuestro conjunto de datos lo dividimos entre el conjunto de **training** y el de **testeo**. Para crear nuestro training set utilizaremos el 70% de las entradas de nuestro conjunto de datos.
 
 ```{r}
 library(glmnet)
@@ -508,7 +507,7 @@ matplot(log(ridge.lambda), t(ridge.coefs), type = "l", lty = 1, col = rainbow(nr
 legend("topright", legend = colnames(X), col = rainbow(nrow(ridge.coefs)), lty = 1, cex = 0.6)
 ```
 
-Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx (-\inf,-4)$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. 
+Vemos claramente 3 regiones en la gráfica. Una primera región a la izquierda, hasta $\log\lambda \approx -4$, donde los coeficientes son constantes. Una segunda región intermedia, aproximadamente entre $-4$ y $4$ donde estos valores varían, disminuyendo todos los coeficientes a excepción de `lcp`, el cual comienza con un valor negativo y crece hasta tener uno positivo. Finaliza con una tercera región, donde los coeficientes convergen a un valor cercano a 0. 
 
 Obtenemos el valor óptimo estimado de $\lambda$ usando validación cruzada, con la función `cv.glmnet` con el parámetro $\alpha=0$:
 
@@ -519,11 +518,12 @@ set.seed(123)
 # Obtenemos el mejor valor de lambda usando cross-validation
 cv.ridge.model <- cv.glmnet(X.train, y.train, alpha=0, lambda=lambdas)
 lambda.min.ridge <- cv.ridge.model$lambda.min
-log(lambda.min.ridge)
 ```
 
 - Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.ridge,4)`$.
 - Valor óptimo: $\log\lambda_\text{Ridge} = `r round(log(lambda.min.ridge),4)`$.
+
+El valor óptimo del $\log\lambda_\text{Ridge}$ nos permite ubicar el valor del $\lambda$ óptimo en la gráfica anterior, ubicándola en la región intermedia descrita con anterioridad.
 
 A continuación presentamos la gráfica del $MSE$ frente a $\log\lambda$ correspondiente al modelo de Ridge.
 
@@ -575,7 +575,7 @@ set.seed(123)
 # Obtenemos el mejor valor de lambda usando cross-validation
 cv.lasso.model <- cv.glmnet(X.train, y.train, alpha=1, lambda=lambdas)
 lambda.min.lasso <- cv.lasso.model$lambda.min
-lambda.min.lasso
+log(lambda.min.lasso)
 ```
 
 - Valor óptimo: $\lambda_\text{Ridge} = `r round(lambda.min.lasso,4)`$.
@@ -626,13 +626,17 @@ ggplot(coef.data.long, aes(x = variable, y = Coeficiente, fill = Modelo)) +
   theme_minimal()
 ```
 
-Lo primero que salta a la vista es que el modelo **Lasso** ha eliminado el predictor `lbph` a diferencia del resto, ya que el modelo **Lasso** es el único que realiza selección de variables. De forma similar, el resto de modelos otorga un peso muy bajo a este predictor.
+- **`lbph`**: Lo primero que salta a la vista es que el modelo **Lasso** ha eliminado este predictor a diferencia del resto, ya que el modelo **Lasso** es el único que realiza selección de variables. De forma similar, el resto de modelos le otorgan un peso muy bajo.
 
-Algo similar ocurre con el predictor `lcp`, que obtiene pesos bajos aunque mayores que los de `lbph`, y además **Lasso** lo mantiene en su modelo. Vemos una diferencia significante entre el peso que le otorga el modelo de **Ridge**, relativamente mucho mayor al que le otorgan los otros modelos.
+- **`lcavol`**: Los tres modelos coinciden en otorgar un gran peso a este predictor, destacando el modelo lineal. Lasso y Ridge otorgan un valor similar entre ellos, siendo el peso en el modelo de Lasso mayor.
 
-La mayor diferencia entre los modelos la vemos en la variable `lcavol`, donde la regresión múltiple le otorga un peso mucho mayor al que le otorgan el resto de los modelos, que también difieren en una proporción menor, siendo el modelo de **Ridge** el que menor importancia le otorga. 
+- **`lcp`**: Este caso es especialmente llamativo, y es que mientras los modelos Lasso y Ridge coinciden en otorgarle un peso alto (es el coeficiente de mayor valor en ambos), en el modelo de regresión múltiple este valor no es solo mucho menor, sino que además es negativo. 
 
-Finalmente, con la variable `lweight` es con la que más consenso hay entre modelos, siendo para todos la variable más importante para el modelo (junto con `lcp` en el caso de la regresión múltiple), siendo el modelo que más peso le da el modelo de **Ridge**.
+- **`lweight`**: En este predictor encontramos el mayor consenso entre los tres modelos, otorgándole un gran peso los tres modelos.
+
+- **`svi`**: Este es otro caso de gran contraste entre los modelos, y es que mientras es el valor con mayor peso en el modelo múltiple, con una gran distancia al segundo, el modelo de Ridge le otorga un valor mínimo y el modelo de Lasso directamente lo elimina.
+
+El comportamiento tan diferente de los coeficientes `lcp` y `svi` podría indicar la existencia de una correlación de importancia notable entre dichas variables.
 
 2. **Rendimiento**: 
 
@@ -657,6 +661,7 @@ rsq.adj <- function(y,y2,p) {
 }
 ```
 
+
 ```{r}
 pred.multiple <- predict(modelo_lpsa, newdata = as.data.frame(X.test))
 
@@ -665,17 +670,17 @@ resultados <- data.frame(
   Multiple = c(
     mse(y.test, pred.multiple), 
     rsq(y.test, pred.multiple), 
-    rsq.adj(y.test, pred.multiple, 4)
+    rsq.adj(y.test, pred.multiple, 5)
   ),
   Ridge = c(
     mse(y.test, pred.ridge), 
     rsq(y.test, pred.ridge), 
-    rsq.adj(y.test, pred.ridge, 4)
+    rsq.adj(y.test, pred.ridge, 5)
   ), 
   Lasso = c(
     mse(y.test, pred.lasso),
     rsq(y.test, pred.lasso),
-    rsq.adj(y.test, pred.lasso, 3) # p = 3 aquí ya que, como recordamos, lasso elimina lbph
+    rsq.adj(y.test, pred.lasso, 4) # p = 4 aquí ya que, como recordamos, lasso elimina lbph
   )
 )
 
@@ -695,7 +700,6 @@ ggplot(resultados.long, aes(Metric, Valor, fill = Modelo)) +
 
 ## 6.4 Conclusiones
 
-
 Como podemos observar, el modelo que mejor ha funcionado en nuestro caso es el de la regresión múltiple, teniendo un resultado mejor que el de los otros modelos tras medir su rendimiento usando **MSE**, $R^2$ y $R^2_\text{adj}$ en el conjunto de testeo.
 
 Así, podemos concluir que los modelos que penalizan un número mayor de predictores, en este caso, funciona peor que el modelo de regresión múltiple que no cuenta con esa penalización. Además, tampoco representan una mejora en el rendimiento o en el espacio de almacenamiento, dado que contamos con un número muy limitado de predictores y de observaciones, por lo que no se recomendaría su uso en situaciones similares.
@@ -705,7 +709,7 @@ Para responder a si los modelos lineales podrían ser utilizados o no, revisamos
 - $R^2 = `r resultados$Multiple[2]`$
 - $R^2_\text{adj} = `r resultados$Multiple[3]`$
 
-Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría ser utilizado para realizar predicciones.
+Como vemos, nuestro modelo funciona relativamente bien con el conjunto de testeo, por lo que podemos concluir que este modelo podría llegar a ser utilizado para realizar predicciones.
 
 # 7. LDA
 
