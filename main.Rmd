@@ -397,9 +397,9 @@ Ahora sustituimos `lcavol` por su expresión en términos de `cavol`:
 
 ```{r}
 library(corrplot)
+prostate$svi = as.numeric(prostate$svi)
 
 cor_data = prostate %>% select(-age, -pgg45, -gleason)
-cor_data$svi = as.numeric(cor_data$svi)
 cor_matrix <- cor(cor_data)
 
 # Quitamos las relaciones (x, x), puede ser menos intuitiva de interpretar, pero
@@ -440,7 +440,7 @@ Se ha realizado un análisis de correlación entre las variables del conjunto de
 # 5.2 Modelo de regresión lineal para predecir `lpsa`.
 
 ```{r}
-modelo_lpsa <- lm(lpsa ~ lcavol + lweight + lbph + lcp, data = prostate)
+modelo_lpsa <- lm(lpsa ~ lcavol + lweight + lbph + lcp + svi, data = prostate)
 
 summary(modelo_lpsa)
 ```
@@ -475,7 +475,7 @@ Para realizar las predicciones usando los modelos de **Ridge** y **Lasso** utili
 library(glmnet)
 
 # Preparamos un dataset sin las variables que no usamos
-datos_usados <- subset(prostate, select = -c(age, pgg45, gleason, svi))
+datos_usados <- subset(prostate, select = -c(age, pgg45, gleason))
 
 # Dividimos el dataset entre predictores y el valor a predecir
 X <- as.matrix(datos_usados[, -which(names(datos_usados) == "lpsa")])
