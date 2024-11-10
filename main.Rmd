@@ -1174,3 +1174,46 @@ pcr.final <- pcr(lpsa ~ lcavol + lweight + lbph + lcp + svi,
                  ncomp = 2)
 summary(pcr.final)
 ```
+
+```{r}
+# Predicciones
+pcr.pred_full <- predict(pcr.fit, df, ncomp = 5)
+multi_pred_full <- predict(modelo_lpsa, newdata = df)
+
+# MSE pcr
+mse_pcr_full <- mean((pcr.pred_full - df$lpsa)^2)
+# MSE multi
+mse_multi_full <- mean((multi_pred_full - df$lpsa)^2)
+
+# R2 pcr
+ss_total_full <- sum((df$lpsa - mean(df$lpsa))^2)
+ss_residual_pcr_full <- sum((pcr.pred_full - df$lpsa)^2)
+r_squared_pcr_full <- 1 - (ss_residual_pcr_full / ss_total_full)
+adj_r_squared_pcr_full <- 1 - ((1 - r_squared_pcr_full) * (nrow(df) - 1) / (nrow(df) - 2 - 1))
+# R2 multi
+adj_r_squared_multi_full <- summary(modelo_lpsa)$adj.r.squared
+
+
+cat("PCR: regresión de componentes principales\n",
+    "MULTI: Regresión Lineal Múltiple\n\n",
+    "############ MSE ############\n\n",
+    "MSE (PCR):", mse_pcr_full, "\n",
+    "MSE (MULTI):", mse_multi_full, "\n\n",
+    "############ R² ############\n\n",
+    "R² ajustado (PCR):", adj_r_squared_pcr_full, "\n",
+    "R² ajustado (MULTI):", adj_r_squared_multi_full, "\n")
+
+```
+**MSE (Error Cuadrático Medio)**:
+
+Ambos modelos, **PCR** y **Regresión Lineal Múltiple (MULTI)**, tienen un MSE de **0.469**, lo que indica que la precisión de las predicciones en ambos casos es comparable.
+
+**R² ajustado**:
+
+-   El modelo de **PCR** tiene un R² ajustado de **0.6368**, lo que significa que explica el **63.68%** de la variabilidad de los datos.
+-   El modelo de **Regresión Lineal Múltiple (MULTI)** tiene un R² ajustado de **0.6248**, lo que implica que explica el **62.48%** de la variabilidad de los datos.
+
+**Conclusión**:
+
+Aunque ambos modelos presentan un MSE igual, lo que refleja una precisión similar en las predicciones, el modelo **PCR** tiene una ligera ventaja en cuanto a **R² ajustado**. Esto sugiere que **PCR** está mejor ajustado a los datos y puede estar aprovechando de manera más eficiente la estructura de las variables. Sin embargo, la diferencia no es tan grande, por lo que ambos modelos pueden ser igualmente válidos dependiendo del contexto y los requisitos del análisis.
+
